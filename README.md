@@ -81,32 +81,49 @@ See [skills/openspec-design/USAGE.md](skills/openspec-design/USAGE.md) for detai
 
 ### google-news-seo
 
-Audit and optimize news articles for Google News SEO. Covers NewsArticle Schema review, AI-generated content compliance checks, and Google News inclusion requirements.
+Full-stack audit and optimization skill for Google News SEO. Covers initial context assessment, NewsArticle Schema review, AI content compliance, technical news SEO, on-page checks, Google E-E-A-T scanning, and structured report generation.
 
 **Use when:**
 - "Check this article's Google News SEO"
 - "Audit / fix the NewsArticle Schema"
 - "How can AI-generated content get into Google News?"
-- Reviewing a news article's structured data
+- "Run EEAT scan" / "EEAT 扫描" / "EEAT audit"
+- "Check robots.txt / News Sitemap / Core Web Vitals"
+- Reviewing title tags, meta descriptions, canonical tags, or heading structure
 
 **Features:**
-- Full NewsArticle Schema checklist (critical + recommended fields)
-- AI content compliance checks (image filenames, author attribution, E-E-A-T)
-- Ready-to-use Schema fix template
-- Systemic bug detection for batch template-level fixes
-- Structured output report with P0 / P1 / P2 priority fix list
+- **Initial Assessment** — collects site type, target topics, known issues, and audit scope before starting; skips answered questions automatically
+- **Schema detection safeguard** — warns that `web_fetch` can't detect JS-injected JSON-LD (Yoast/AIOSEO/RankMath); provides Rich Results Test and DevTools alternatives
+- **NewsArticle Schema checklist** — critical + recommended fields; ready-to-use fix template and systemic bug table
+- **AI content compliance** — image filename checks, author attribution, E-E-A-T signals for AI-generated content
+- **Technical SEO** — robots.txt/Googlebot-News, News Sitemap (`<news:news>` tags), Core Web Vitals (LCP/INP/CLS), HTTPS
+- **On-page checks** — title tag length and keyword placement, meta description, canonical tag, H1/heading hierarchy
+- **E-E-A-T scanning** — 24-signal four-dimension scan (Experience / Expertise / Authoritativeness / Trustworthiness) with 0–100 scores per dimension
+- **Structured report** — Executive Summary (🟢/🟡/🔴 health rating, Top Issues, Quick Wins) + per-dimension check tables + P0/P1/P2 priority fix list
 
 **Output example:**
 
-| Check item | Result | Notes |
-|---|---|---|
-| `@context` uses HTTPS | Pass ✅ | — |
-| `dateModified` ≥ `datePublished` | Fail ❌ | `dateModified` is earlier; fix assignment order |
-| `author` is a real Person | Manual 🔍 | Verify byline matches Schema |
+```
+### Executive Summary
+
+Overall Health: 🟡 Needs Work
+Scope: NewsArticle Schema + EEAT scan
+
+Top Issues
+- [P0] Schema: dateModified is earlier than datePublished
+- [P1] On-Page: Meta description missing
+- [P1] EEAT/Experience: AI-tool marker found in image filename
+
+Quick Wins
+- Fix dateModified: Set to last-edited timestamp in CMS Schema output
+- Add meta description: Map article excerpt to meta description in theme template
+```
 
 **Languages:** Responds in the same language as the user (English / Chinese auto-detect).
 
-**References:** See [skills/google-news-seo/reference.md](skills/google-news-seo/reference.md) for Google News ranking factors, AI content policy, and News Sitemap examples.
+**References:**
+- Google News ranking factors, AI content policy, News Sitemap examples: [reference.md](skills/google-news-seo/reference.md)
+- EEAT signal definitions (24 signals, priority table): [eeat-reference.md](skills/google-news-seo/eeat-reference.md)
 
 ---
 
@@ -126,6 +143,12 @@ Check the Google News SEO for https://example.com/news/article-slug/
 ```
 ```
 审查这篇文章的 NewsArticle Schema，帮我修复 AI 内容合规问题
+```
+```
+EEAT 扫描 https://example.com/news/article-slug/
+```
+```
+Run EEAT audit for https://example.com/news/article-slug/
 ```
 
 ## What are Agent Skills?
@@ -161,7 +184,8 @@ stark-skills/
 │   │   └── USAGE.md
 │   └── google-news-seo/
 │       ├── SKILL.md
-│       └── reference.md
+│       ├── eeat-reference.md   # EEAT 24-signal checklist
+│       └── reference.md        # Google News ranking factors & policy
 ├── AGENTS.md
 ├── CLAUDE.md
 └── README.md
