@@ -1,6 +1,6 @@
 # Stark Skills
 
-A collection of skills for AI coding agents. Skills are packaged instructions that extend agent capabilities for design and spec workflows.
+A collection of skills for AI coding agents. Skills are packaged instructions that extend agent capabilities for design, spec, and SEO workflows.
 
 Skills follow the [Agent Skills](https://agentskills.io/) format and are compatible with Cursor.
 
@@ -9,20 +9,21 @@ Skills follow the [Agent Skills](https://agentskills.io/) format and are compati
 Using the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-npx skills add <owner>/stark-skills
+npx skills add wghust/stark-skills
 ```
 
 ### Source Formats
 
 ```bash
-# GitHub shorthand (replace with your repo)
-npx skills add owner/stark-skills
+# GitHub shorthand
+npx skills add wghust/stark-skills
 
 # Full GitHub URL
-npx skills add https://github.com/owner/stark-skills
+npx skills add https://github.com/wghust/stark-skills
 
-# Direct path to a skill in this repo
-npx skills add https://github.com/owner/stark-skills/tree/main/skills/openspec-design
+# Direct path to a specific skill
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/openspec-design
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/google-news-seo
 
 # Local path
 npx skills add ./stark-skills
@@ -33,8 +34,11 @@ npx skills add ./stark-skills
 If you prefer not to use the CLI, copy the skill directly:
 
 ```bash
-git clone <repo-url> stark-skills
+git clone https://github.com/wghust/stark-skills stark-skills
+
+# Install a single skill globally
 cp -r stark-skills/skills/openspec-design ~/.cursor/skills/
+cp -r stark-skills/skills/google-news-seo ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -73,6 +77,39 @@ design/
 
 See [skills/openspec-design/USAGE.md](skills/openspec-design/USAGE.md) for detailed usage and FAQ.
 
+---
+
+### google-news-seo
+
+Audit and optimize news articles for Google News SEO. Covers NewsArticle Schema review, AI-generated content compliance checks, and Google News inclusion requirements.
+
+**Use when:**
+- "Check this article's Google News SEO"
+- "Audit / fix the NewsArticle Schema"
+- "How can AI-generated content get into Google News?"
+- Reviewing a news article's structured data
+
+**Features:**
+- Full NewsArticle Schema checklist (critical + recommended fields)
+- AI content compliance checks (image filenames, author attribution, E-E-A-T)
+- Ready-to-use Schema fix template
+- Systemic bug detection for batch template-level fixes
+- Structured output report with P0 / P1 / P2 priority fix list
+
+**Output example:**
+
+| Check item | Result | Notes |
+|---|---|---|
+| `@context` uses HTTPS | Pass ✅ | — |
+| `dateModified` ≥ `datePublished` | Fail ❌ | `dateModified` is earlier; fix assignment order |
+| `author` is a real Person | Manual 🔍 | Verify byline matches Schema |
+
+**Languages:** Responds in the same language as the user (English / Chinese auto-detect).
+
+**References:** See [skills/google-news-seo/reference.md](skills/google-news-seo/reference.md) for Google News ranking factors, AI content policy, and News Sitemap examples.
+
+---
+
 ## Usage
 
 Skills are loaded on demand. When the user's message matches the skill's trigger phrases, the agent reads `SKILL.md` and applies its instructions.
@@ -84,6 +121,12 @@ Run openspec-design
 ```
 Enhance OpenSpec design, then create a proposal for the user center with design at https://www.figma.com/design/xxx?node-id=2496-1199
 ```
+```
+Check the Google News SEO for https://example.com/news/article-slug/
+```
+```
+审查这篇文章的 NewsArticle Schema，帮我修复 AI 内容合规问题
+```
 
 ## What are Agent Skills?
 
@@ -92,7 +135,8 @@ Agent skills are reusable instruction sets that extend your coding agent's capab
 Skills let agents perform specialized tasks like:
 - Integrating design assets (Figma, images) into workflows
 - Extending proposal flows with automated steps
-- Generating structured outputs (e.g. design-map.md)
+- Auditing and fixing SEO structured data at scale
+- Generating structured outputs (e.g. design-map.md, SEO audit reports)
 
 ## Supported Agents
 
@@ -112,9 +156,12 @@ Each skill in this repo contains:
 ```
 stark-skills/
 ├── skills/
-│   └── openspec-design/
+│   ├── openspec-design/
+│   │   ├── SKILL.md
+│   │   └── USAGE.md
+│   └── google-news-seo/
 │       ├── SKILL.md
-│       └── USAGE.md
+│       └── reference.md
 ├── AGENTS.md
 ├── CLAUDE.md
 └── README.md
