@@ -40,14 +40,93 @@ Auditing [URL / article / site] — scope: [scope summary]. Starting checks...
 | Raw Schema JSON | Parse directly |
 | URL or HTML + EEAT scan request / URL 或 HTML + EEAT 扫描请求 | Run full E-E-A-T analysis → see Sections 7–9 / 执行 EEAT 全维度分析 → 见第 7–9 节 |
 
-> ⚠️ **Schema Detection Warning / Schema 检测警告**
->
-> `web_fetch` and static HTML fetching **cannot reliably detect JSON-LD structured data injected via client-side JavaScript** (e.g., by Yoast SEO, AIOSEO, RankMath, or custom JS). If Schema is not found in `web_fetch` output, **do NOT report "no Schema found"** — mark it as 🔍 Manual instead.
->
-> **Recommended alternatives / 推荐替代方法（按优先级）：**
-> 1. **Rich Results Test** — https://search.google.com/test/rich-results （渲染 JS，最可靠）
-> 2. **Browser DevTools console** — run: `document.querySelectorAll('script[type="application/ld+json"]')`
-> 3. **Screaming Frog** — if the user can provide a crawl export (renders JavaScript)
+### Schema Fetch Protocol / Schema 获取流程
+
+Retrieve JSON-LD in three sequential phases. Only advance to the next phase if the current one yields no JSON-LD blocks.
+
+> ⚠️ **Anti-pattern — do NOT do this:**  
+> Do NOT report "JSON-LD 无法通过抓取自动提取（前端渲染）" or "client-side rendered" based solely on a failed `web_fetch`. SSR/SSG sites (Next.js, Nuxt, Hugo, WordPress) pre-render JSON-LD into static HTML — `curl` can fetch it directly. A fetch failure alone is **not** evidence of CSR.
+
+---
+
+**Phase 1 — web_fetch（优先）**
+
+Use `web_fetch` to retrieve the page. If the response contains one or more `<script type="application/ld+json">` blocks → extract and proceed to Schema analysis. **Stop here.**
+
+---
+
+**Phase 2 — curl fallback（web_fetch 无结果时）**
+
+> **Note**: Attempting curl fallback — SSR/SSG sites pre-render JSON-LD into static HTML; curl can retrieve it directly without JS execution.
+
+If Shell tool is unavailable, skip directly to Phase 3.
+
+```bash
+# Step A: fetch raw HTML with Googlebot UA
+# Note: macOS mktemp doesn't support extensions; use a plain suffix
+TMPFILE=$(mktemp /tmp/page_XXXXXX)
+curl -sL \
+  -H "User-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" \
+  --max-time 15 \
+  "<URL>" > "$TMPFILE" 2>&1
+echo "File size: $(wc -c < "$TMPFILE") bytes"
+```
+
+- **403 / 429**: retry once with Chrome UA:  
+  `-H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`
+- **Timeout / non-zero exit / file size 0**: skip to Phase 3
+
+```bash
+# Step B: extract JSON-LD — write Python script via heredoc to avoid quoting issues
+cat > /tmp/extract_jsonld.py << 'PYEOF'
+import re, json
+html = open('/tmp/page_XXXXXX.html').read()  # replace XXXXXX with actual suffix from $TMPFILE
+pattern = re.compile(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', re.DOTALL | re.IGNORECASE)
+blocks = pattern.findall(html)
+print(f'Total blocks found: {len(blocks)}')
+for i, b in enumerate(blocks, 1):
+    print(f'=== JSON-LD Block {i} ===')
+    try:
+        print(json.dumps(json.loads(b.strip()), indent=2, ensure_ascii=False))
+    except Exception as e:
+        print(f'Parse error: {e}')
+        print(b.strip()[:500])
+PYEOF
+# Replace the filename placeholder with the actual $TMPFILE path, then run:
+sed -i '' "s|/tmp/page_XXXXXX.html|$TMPFILE|g" /tmp/extract_jsonld.py
+python3 /tmp/extract_jsonld.py
+```
+
+```bash
+# Step B fallback — grep (if Python 3 unavailable)
+grep -oE '<script[^>]+type="application/ld\+json"[^>]*>.*?</script>' "$TMPFILE" | sed 's/<[^>]*>//g'
+```
+
+```bash
+# Step C: clean up
+rm -f "$TMPFILE" /tmp/extract_jsonld.py
+```
+
+If extraction returns results → use for Schema analysis; note **"Schema retrieved via curl fallback"**.
+
+- **Multiple blocks**: extract all; use the block with `"@type": "NewsArticle"` for Schema analysis
+- **Malformed JSON**: output raw block, flag as "partially retrievable", continue best-effort analysis
+
+---
+
+**Phase 3 — 🔍 Manual（仅在两阶段均无结果时）**
+
+Mark Schema detection as 🔍 Manual. Output exactly:
+
+```
+Schema could not be auto-detected (web_fetch and curl both returned no JSON-LD).
+Verify manually: 🔗 https://search.google.com/test/rich-results?url=<URL>
+```
+
+❌ Do NOT say: "前端渲染" / "client-side rendering" / "JavaScript-rendered"  
+✅ Only say: "could not be auto-detected"
+
+---
 
 **3 hard requirements for Google News inclusion / 三项硬性门槛：**
 
