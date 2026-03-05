@@ -24,6 +24,7 @@ npx skills add https://github.com/wghust/stark-skills
 # Direct path to a specific skill
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/openspec-design
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/google-news-seo
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/copy-web
 
 # Local path
 npx skills add ./stark-skills
@@ -39,6 +40,7 @@ git clone https://github.com/wghust/stark-skills stark-skills
 # Install a single skill globally
 cp -r stark-skills/skills/openspec-design ~/.cursor/skills/
 cp -r stark-skills/skills/google-news-seo ~/.cursor/skills/
+cp -r stark-skills/skills/copy-web ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -127,6 +129,49 @@ Quick Wins
 
 ---
 
+### copy-web
+
+Full-stack replication of any public website. Given a URL, the agent performs deep CSS/API/service analysis, then generates a complete monorepo with a Next.js 14 frontend, NestJS 10 backend, MySQL + Redis via Docker, and a credentials report listing every required external API key.
+
+**Use when:**
+- "Clone this website: [URL]"
+- "Replicate / copy / mirror / rebuild [URL] — I need a working full-stack version"
+- "复刻 / 仿写 / 克隆这个网站：[URL]"
+- Rebuilding a competitor's site or turning a reference design into a deployable product
+
+**Features:**
+- Deep analysis: `getComputedStyle` per element (pixel-perfect CSS), XHR/fetch network interception (API discovery), third-party service scan (Maps, Stripe, OpenAI, Clerk, etc.)
+- **1:1 pixel-perfect frontend**: Tailwind arbitrary values (`bg-[#1a1f2e]`) + shadcn/ui for interactive components + Framer Motion for animations
+- **Working backend**: NestJS 10 with full CRUD modules per inferred entity, TypeORM + MySQL, conditional JWT auth
+- **Infrastructure**: `docker-compose.yml` (MySQL 8 + optional Redis 7), `.env.example`, `backend/Dockerfile`
+- **Credentials report**: lists every required API key (Google Maps, Stripe, AI keys, etc.) with acquisition instructions before any code is generated
+- Multi-page support (up to 5 pages), responsive layout replication, TanStack Query frontend ↔ backend wiring
+
+**Output structure:**
+```
+<domain>-clone/
+├── frontend/               # Next.js 14 App Router + shadcn/ui + TanStack Query
+│   ├── app/                # layout.tsx, page.tsx, [route]/page.tsx
+│   ├── components/         # ui/ (shadcn), layout/, sections/
+│   └── lib/api.ts          # Axios client → backend
+├── backend/                # NestJS 10
+│   ├── src/[feature]/      # module / controller / service / entity / dto
+│   └── Dockerfile
+├── docker-compose.yml      # MySQL 8.0 (+ Redis 7 if needed)
+├── .env.example
+├── site-analysis.md        # Deep analysis output — review before codegen
+├── credentials-report.md   # Required API keys — fill before starting
+└── copy-report.md          # Feature coverage + design fidelity table
+```
+
+**Languages:** Responds in the same language as the user (English / Chinese auto-detect).
+
+**Prerequisites:** browser-use skill + Docker Desktop.
+
+See [skills/copy-web/USAGE.md](skills/copy-web/USAGE.md) for detailed usage, running instructions, and FAQ.
+
+---
+
 ## Usage
 
 Skills are loaded on demand. When the user's message matches the skill's trigger phrases, the agent reads `SKILL.md` and applies its instructions.
@@ -149,6 +194,10 @@ EEAT 扫描 https://example.com/news/article-slug/
 ```
 ```
 Run EEAT audit for https://example.com/news/article-slug/
+Clone this website: https://globalsight.ai/home
+```
+```
+复刻这个网站：https://globalsight.ai/home
 ```
 
 ## What are Agent Skills?
@@ -159,7 +208,8 @@ Skills let agents perform specialized tasks like:
 - Integrating design assets (Figma, images) into workflows
 - Extending proposal flows with automated steps
 - Auditing and fixing SEO structured data at scale
-- Generating structured outputs (e.g. design-map.md, SEO audit reports)
+- Cloning and replicating websites as production-ready React projects
+- Generating structured outputs (e.g. design-map.md, SEO audit reports, copy-report.md)
 
 ## Supported Agents
 
@@ -182,10 +232,14 @@ stark-skills/
 │   ├── openspec-design/
 │   │   ├── SKILL.md
 │   │   └── USAGE.md
-│   └── google-news-seo/
+│   ├── google-news-seo/
+│   │   ├── SKILL.md
+│   │   └── reference.md
+│   └── copy-web/
 │       ├── SKILL.md
 │       ├── eeat-reference.md   # EEAT 24-signal checklist
 │       └── reference.md        # Google News ranking factors & policy
+│       └── USAGE.md
 ├── AGENTS.md
 ├── CLAUDE.md
 └── README.md
