@@ -1,6 +1,6 @@
 # Stark Skills
 
-A collection of skills for AI coding agents. Skills are packaged instructions that extend agent capabilities for design, spec, and SEO workflows.
+A collection of skills for AI coding agents. Skills are packaged instructions that extend agent capabilities for design, spec, SEO, and debugging workflows.
 
 Skills follow the [Agent Skills](https://agentskills.io/) format and are compatible with Cursor.
 
@@ -25,6 +25,7 @@ npx skills add https://github.com/wghust/stark-skills
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/openspec-design
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/google-news-seo
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/copy-web
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/nextjs-debug
 
 # Local path
 npx skills add ./stark-skills
@@ -41,6 +42,7 @@ git clone https://github.com/wghust/stark-skills stark-skills
 cp -r stark-skills/skills/openspec-design ~/.cursor/skills/
 cp -r stark-skills/skills/google-news-seo ~/.cursor/skills/
 cp -r stark-skills/skills/copy-web ~/.cursor/skills/
+cp -r stark-skills/skills/nextjs-debug ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -172,32 +174,79 @@ See [skills/copy-web/USAGE.md](skills/copy-web/USAGE.md) for detailed usage, run
 
 ---
 
+### nextjs-debug
+
+Diagnoses and fixes Next.js project startup, compilation, and runtime errors. Given a log or problem description, the agent classifies the error, locates the exact file and line in the project source, traces import chains, audits dependencies, checks version compatibility, and correlates the issue with recent git changes.
+
+**Use when:**
+- "My Next.js app fails to start / won't compile"
+- "Module not found" / "Cannot find module" errors
+- "Hydration failed" / hydration mismatch warnings
+- Server Component / Client Component boundary errors ("use client missing")
+- Environment variable not working / `NEXT_PUBLIC_` issues
+- `next build` fails after upgrading packages
+- "next dev fails" / Turbopack errors / port conflict
+- 启动报错 / 编译失败 / 模块找不到 / hydration 错误
+
+**Features:**
+- **6-class error classification**: `COMPILE_ERROR`, `MODULE_ERROR`, `BOUNDARY_ERROR`, `ENV_ERROR`, `CONFIG_ERROR`, `RUNTIME_ERROR`
+- **Active code location**: reads real project files, extracts inline code snippets with `▶` error-line markers
+- **Import chain tracing**: follows import chains up to 2 levels; resolves `tsconfig.json` path aliases
+- **Stack trace mapping**: maps Node.js stack frames back to project source files
+- **Version compatibility check**: detects Node.js/React/Next.js version mismatches and deprecated API usage
+- **Dependency audit**: finds peer dep conflicts, duplicate React instances, missing `node_modules`, stale `.next` cache
+- **Git context**: correlates error with recent commits, uncommitted changes, and `package.json` diffs
+- **Fix verification**: each fix step includes a concrete verification command and expected output
+
+**Output structure:**
+```
+## Version Stack          — version summary + compatibility warnings
+## Likely Regression      — git context: which commit / diff introduced the issue
+## Error 1: MODULE_ERROR  — blocking
+  ### Root Cause
+  ### Affected Files      — with inline code snippet + ▶ error line marker
+  ### Fix Steps
+  ### Verify Fix          — exact command + expected output
+  ### References          — nextjs.org/docs links
+```
+
+**Languages:** Responds in the same language as the user (English / Chinese auto-detect).
+
+**References:**
+- Error patterns, version matrix, code search templates: [reference.md](skills/nextjs-debug/reference.md)
+
+---
+
 ## Usage
 
 Skills are loaded on demand. When the user's message matches the skill's trigger phrases, the agent reads `SKILL.md` and applies its instructions.
 
 **Examples:**
+
 ```
+# openspec-design
 Run openspec-design
-```
-```
 Enhance OpenSpec design, then create a proposal for the user center with design at https://www.figma.com/design/xxx?node-id=2496-1199
 ```
+
 ```
+# google-news-seo
 Check the Google News SEO for https://example.com/news/article-slug/
-```
-```
 审查这篇文章的 NewsArticle Schema，帮我修复 AI 内容合规问题
-```
-```
 EEAT 扫描 https://example.com/news/article-slug/
 ```
+
 ```
-Run EEAT audit for https://example.com/news/article-slug/
+# copy-web
 Clone this website: https://globalsight.ai/home
-```
-```
 复刻这个网站：https://globalsight.ai/home
+```
+
+```
+# nextjs-debug
+My Next.js app fails to start — Module not found: Can't resolve './components/Button'
+next build 报错，帮我定位问题
+Hydration failed after upgrading to Next.js 15
 ```
 
 ## What are Agent Skills?
@@ -209,7 +258,8 @@ Skills let agents perform specialized tasks like:
 - Extending proposal flows with automated steps
 - Auditing and fixing SEO structured data at scale
 - Cloning and replicating websites as production-ready React projects
-- Generating structured outputs (e.g. design-map.md, SEO audit reports, copy-report.md)
+- Diagnosing and fixing Next.js startup, compilation, and runtime errors
+- Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports)
 
 ## Supported Agents
 
@@ -219,10 +269,11 @@ This repository targets **Cursor**. Skills use the [Agent Skills specification](
 
 Each skill in this repo contains:
 
-| File      | Purpose                          |
-| --------- | -------------------------------- |
-| `SKILL.md` | Agent instructions (required)    |
-| `USAGE.md` | User guide and FAQ (optional)    |
+| File | Purpose |
+| --- | --- |
+| `SKILL.md` | Agent instructions (required) |
+| `reference.md` | Lookup tables, patterns, quick reference (optional) |
+| `USAGE.md` | User guide and FAQ (optional) |
 
 ## Repository Structure
 
@@ -234,12 +285,14 @@ stark-skills/
 │   │   └── USAGE.md
 │   ├── google-news-seo/
 │   │   ├── SKILL.md
-│   │   └── reference.md
-│   └── copy-web/
-│       ├── SKILL.md
-│       ├── eeat-reference.md   # EEAT 24-signal checklist
-│       └── reference.md        # Google News ranking factors & policy
-│       └── USAGE.md
+│   │   ├── reference.md        # Google News ranking factors & policy
+│   │   └── eeat-reference.md   # EEAT 24-signal checklist
+│   ├── copy-web/
+│   │   ├── SKILL.md
+│   │   └── USAGE.md
+│   └── nextjs-debug/
+│       ├── SKILL.md            # Execution flow + diagnostic report template
+│       └── reference.md        # Error patterns, version matrix, code search templates
 ├── AGENTS.md
 ├── CLAUDE.md
 └── README.md
