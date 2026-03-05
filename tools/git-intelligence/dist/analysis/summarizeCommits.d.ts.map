@@ -1,0 +1,1 @@
+{"version":3,"file":"summarizeCommits.d.ts","sourceRoot":"","sources":["../../src/analysis/summarizeCommits.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,MAAM,EAAE,aAAa,EAAE,eAAe,EAAE,MAAM,aAAa,CAAC;AAmB1E,wBAAgB,iBAAiB,CAAC,OAAO,EAAE,MAAM,EAAE,GAAG,aAAa,CAMlE;AAiBD,wBAAsB,gBAAgB,CAAC,OAAO,EAAE,MAAM,EAAE,EAAE,OAAO,EAAE,eAAe,GAAG,OAAO,CAAC,aAAa,CAAC,CAa1G"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"gitClient.d.ts","sourceRoot":"","sources":["../../src/git/gitClient.ts"],"names":[],"mappings":"AAAA,OAAO,EAAa,KAAK,SAAS,EAAE,MAAM,YAAY,CAAC;AAIvD,qBAAa,QAAS,SAAQ,KAAK;gBACrB,OAAO,EAAE,MAAM;CAI5B;AAED,wBAAgB,OAAO,CAAC,QAAQ,GAAE,MAAsB,GAAG,SAAS,CAMnE"}

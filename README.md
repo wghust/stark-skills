@@ -26,6 +26,7 @@ npx skills add https://github.com/wghust/stark-skills/tree/main/skills/openspec-
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/google-news-seo
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/copy-web
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/nextjs-debug
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/git-intelligence
 
 # Local path
 npx skills add ./stark-skills
@@ -43,6 +44,7 @@ cp -r stark-skills/skills/openspec-design ~/.cursor/skills/
 cp -r stark-skills/skills/google-news-seo ~/.cursor/skills/
 cp -r stark-skills/skills/copy-web ~/.cursor/skills/
 cp -r stark-skills/skills/nextjs-debug ~/.cursor/skills/
+cp -r stark-skills/skills/git-intelligence ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -217,6 +219,42 @@ Diagnoses and fixes Next.js project startup, compilation, and runtime errors. Gi
 
 ---
 
+### git-intelligence
+
+AI-powered git repository analysis. Extracts structured insights from commits, PRs, and repository history — **zero installation, works immediately after adding the skill**.
+
+**Use when:**
+- "Summarize commits from the last 7 days" / "What changed this week?"
+- "Generate release notes between v1.2.0 and v1.3.0"
+- "Analyze this PR" / "Is branch X risky?" / "What does this branch affect?"
+- "PR risk check" / "Code impact analysis"
+- 提交总结 / 发版说明 / PR 风险分析 / 代码影响范围
+
+**Features:**
+- **summarize-commits**: Classifies recent commits → Features / Fixes / Refactor / Performance
+- **release-notes**: Structured release notes between any two tags
+- **analyze-pr**: Risk score + impacted modules + suggested reviewers (via `git blame`) + test suggestions
+- **detect-risk**: Heuristic risk scoring (files, lines, sensitive folders, test ratio)
+- **change-impact**: Maps changed files to logical system modules and risk areas
+- **Zero-install**: The agent runs `git` commands directly — no Node.js, no API key, no compilation needed
+- **Read-only**: never modifies your repository
+
+**Output example (detect-risk):**
+```
+## Risk Assessment: feature/payment-refactor
+
+**Risk Score**: 🔴 8/10
+
+**Reasons**:
+- Large diff (1200 lines)
+- Payment module modified
+- Low test coverage for changed files
+```
+
+> **Optional CLI tool**: For CI/CD or scripted usage without an agent, see [tools/git-intelligence/README.md](tools/git-intelligence/README.md).
+
+---
+
 ## Usage
 
 Skills are loaded on demand. When the user's message matches the skill's trigger phrases, the agent reads `SKILL.md` and applies its instructions.
@@ -249,6 +287,15 @@ next build 报错，帮我定位问题
 Hydration failed after upgrading to Next.js 15
 ```
 
+```
+# git-intelligence
+Summarize commits from the last 7 days
+Generate release notes from v1.2.0 to v1.3.0
+Is branch feature/payment-refactor risky?
+What does branch feature/api-rewrite affect?
+Who should review this PR?
+```
+
 ## What are Agent Skills?
 
 Agent skills are reusable instruction sets that extend your coding agent's capabilities. They are defined in `SKILL.md` files with YAML frontmatter containing a `name` and `description`. The agent loads a skill when the user's request matches the description.
@@ -259,7 +306,8 @@ Skills let agents perform specialized tasks like:
 - Auditing and fixing SEO structured data at scale
 - Cloning and replicating websites as production-ready React projects
 - Diagnosing and fixing Next.js startup, compilation, and runtime errors
-- Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports)
+- Analyzing git commit history, PR risk, and code change impact
+- Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports, release notes)
 
 ## Supported Agents
 
@@ -290,9 +338,17 @@ stark-skills/
 │   ├── copy-web/
 │   │   ├── SKILL.md
 │   │   └── USAGE.md
-│   └── nextjs-debug/
-│       ├── SKILL.md            # Execution flow + diagnostic report template
-│       └── reference.md        # Error patterns, version matrix, code search templates
+│   ├── nextjs-debug/
+│   │   ├── SKILL.md            # Execution flow + diagnostic report template
+│   │   └── reference.md        # Error patterns, version matrix, code search templates
+│   └── git-intelligence/
+│       └── SKILL.md            # CLI command mapping + trigger phrases
+├── tools/
+│   └── git-intelligence/       # Runnable TypeScript CLI companion tool
+│       ├── src/                # cli.ts, git/, llm/, analysis/, utils/
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── README.md           # Installation + CLI reference
 ├── AGENTS.md
 ├── CLAUDE.md
 └── README.md

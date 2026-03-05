@@ -1,0 +1,1 @@
+{"version":3,"file":"changeImpact.d.ts","sourceRoot":"","sources":["../../src/analysis/changeImpact.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,UAAU,EAAE,YAAY,EAAE,eAAe,EAAE,MAAM,aAAa,CAAC;AA2C7E,wBAAsB,YAAY,CAAC,IAAI,EAAE,UAAU,EAAE,OAAO,EAAE,eAAe,GAAG,OAAO,CAAC,YAAY,CAAC,CASpG"}
