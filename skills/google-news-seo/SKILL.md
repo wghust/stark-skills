@@ -1,12 +1,30 @@
 ---
 name: google-news-seo
-description: Audit and optimize news articles for Google News SEO, including NewsArticle Schema review and fixes, AI-generated content compliance checks, Google News inclusion requirements, and Google E-E-A-T scanning with structured report generation. Use when asked about Google News SEO, NewsArticle Schema optimization, how AI content can get into Google News, reviewing a news article's Schema, or running an EEAT scan / audit. 检查和优化新闻文章的 Google News SEO，包括 NewsArticle Schema 审查与修复、AI 生成内容合规性检查、Google News 收录要求核查，以及 Google E-E-A-T 全维度扫描并生成结构化报告。当用户询问 Google News SEO、NewsArticle Schema 如何优化、AI 内容如何进入 Google News、需要审查某篇新闻文章的 Schema、或要求 EEAT 扫描/审计时使用。
+description: Google News Diagnostic Engine — audit and optimize news articles for Google News SEO. Determines Layer 1 index eligibility and Layer 2 ranking competitiveness. Includes NewsArticle Schema review, AI content compliance checks, publisher trust detection, author authority scoring, freshness analysis, topic cluster compatibility, Top Stories detection, competitor gap analysis, and Google E-E-A-T scanning with structured report generation. Use when asked about Google News SEO, why a site is not indexed in Google News, why articles don't rank, NewsArticle Schema optimization, how AI content can get into Google News, or running an EEAT scan / audit. 检查和优化新闻文章的 Google News SEO，包括双层诊断引擎（Layer 1 索引准入 / Layer 2 排名竞争）、NewsArticle Schema 审查与修复、AI 生成内容合规性检查、发布者信任度检测、作者权威性评分、新鲜度分析、话题聚类兼容性、Top Stories 检测、竞争对手差距分析，以及 Google E-E-A-T 全维度扫描。
 ---
 
-# Google News SEO
+# Google News SEO Diagnostic Engine
 
 > **Language / 语言**：Detect the user's language and respond in the same language throughout.
 > 用户用中文提问则全程用中文回复；用英文提问则全程用英文回复。
+
+---
+
+## Google News System Model
+
+Google News operates on a **two-layer architecture**. This skill evaluates both layers independently.
+
+| Layer | Name | Function |
+|-------|------|----------|
+| **Layer 1** | News Index System | Determines whether a site enters the Google News index |
+| **Layer 2** | News Ranking System | Determines whether articles rank in topic clusters and appear in Top Stories |
+
+**Layer 1 must pass before Layer 2 matters.** If a site is not indexed, ranking optimization is premature.
+
+Diagnostic routing:
+- **Layer 1 fails** → focus on index eligibility (publisher trust, crawlability, Schema, sitemap)
+- **Layer 1 passes, Layer 2 fails** → focus on ranking signals (freshness, content type, cluster compatibility, competitors)
+- **Both pass** → surface remaining optimization opportunities via competitor gap analysis
 
 ---
 
@@ -19,13 +37,59 @@ Before starting any checks, gather context by asking the following questions. **
 | 1 | **Site type / 站点类型** — Is this a dedicated news publisher, a corporate blog with a news section, or another site type? |
 | 2 | **Target topics / keywords / 目标关键词或议题** — Which topics, keywords, or named entities are most important for this audit? |
 | 3 | **Current status / 当前状态** — Any known issues, recent migrations, or Google Search Console alerts? |
-| 4 | **Scope / 审计范围** — Full-site audit, specific article(s), or a specific area (Schema only / EEAT only / Technical only / On-Page only)? |
+| 4 | **Scope / 审计范围** — Full Google News Diagnostic (Layer 1 + Layer 2 + Competitor Analysis), article-level audit, or a specific area (Schema only / EEAT only / Technical only / On-Page only)? |
 
 **Skip rule / 跳过规则：** If the user's prompt already implies answers (e.g., provides a URL + says "check the Schema"), skip the answered questions and proceed directly.
+
+**Full Diagnostic trigger / 全站诊断触发：** If scope is "Full Diagnostic" or the user asks "why is my site not in Google News" / "why don't my articles rank" / "why do competitors outrank me", run all Layer 1 + Layer 2 checks and generate the Google News Diagnostic Report (Section 10).
 
 **Acknowledgement / 确认语句：** Before starting checks, output one line:
 ```
 Auditing [URL / article / site] — scope: [scope summary]. Starting checks...
+```
+
+---
+
+## 0.5 · News Index Presence Detection 索引存在检测
+
+> **Run this check first when performing a Full Diagnostic or when the user asks why their site is not appearing in Google News.**
+
+### Step 1 — Simulate Google News index query
+
+Use WebSearch to simulate a `site:<domain>` query in a Google News context. Construct the search as:
+```
+site:<domain> news articles
+```
+Analyze the returned results to determine whether the site's articles appear in Google News coverage.
+
+### Step 2 — Classify index presence
+
+| Result | Status | Definition |
+|--------|--------|------------|
+| 0 results detected | **Not Indexed** | No evidence of Google News indexing |
+| 1–5 results | **Limited Presence** | Some articles indexed; inconsistent coverage |
+| 6+ results across multiple days | **Strong Presence** | Active Google News publisher |
+
+Also record:
+- Total detected article count
+- Timestamp of the most recently indexed article
+- Whether results span multiple days/topics (diversity indicator)
+
+### Step 3 — Route diagnostic focus
+
+| Index Status | Diagnostic Focus |
+|-------------|-----------------|
+| Not Indexed | Prioritize Layer 1 checks; flag as root cause category |
+| Limited Presence | Run both Layer 1 and Layer 2; present findings for each |
+| Strong Presence | Note Layer 1 as passing; focus diagnostic output on Layer 2 ranking checks |
+
+### Output format
+
+```
+News Index Status: [Not Indexed ❌ / Limited Presence ⚠️ / Strong Presence ✅]
+Detected article count: [N]
+Latest indexed article: [timestamp or "not detected"]
+Diagnostic focus: [Layer 1 / Both Layers / Layer 2]
 ```
 
 ---
@@ -44,7 +108,7 @@ Auditing [URL / article / site] — scope: [scope summary]. Starting checks...
 
 Retrieve JSON-LD in three sequential phases. Only advance to the next phase if the current one yields no JSON-LD blocks.
 
-> ⚠️ **Anti-pattern — do NOT do this:**  
+> ⚠️ **Anti-pattern — do NOT do this:**
 > Do NOT report "JSON-LD 无法通过抓取自动提取（前端渲染）" or "client-side rendered" based solely on a failed `web_fetch`. SSR/SSG sites (Next.js, Nuxt, Hugo, WordPress) pre-render JSON-LD into static HTML — `curl` can fetch it directly. A fetch failure alone is **not** evidence of CSR.
 
 ---
@@ -72,7 +136,7 @@ curl -sL \
 echo "File size: $(wc -c < "$TMPFILE") bytes"
 ```
 
-- **403 / 429**: retry once with Chrome UA:  
+- **403 / 429**: retry once with Chrome UA:
   `-H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`
 - **Timeout / non-zero exit / file size 0**: skip to Phase 3
 
@@ -123,7 +187,7 @@ Schema could not be auto-detected (web_fetch and curl both returned no JSON-LD).
 Verify manually: 🔗 https://search.google.com/test/rich-results?url=<URL>
 ```
 
-❌ Do NOT say: "前端渲染" / "client-side rendering" / "JavaScript-rendered"  
+❌ Do NOT say: "前端渲染" / "client-side rendering" / "JavaScript-rendered"
 ✅ Only say: "could not be auto-detected"
 
 ---
@@ -133,6 +197,122 @@ Verify manually: 🔗 https://search.google.com/test/rich-results?url=<URL>
 1. **Dedicated news publisher / 专属新闻网站** — the site's core purpose must be news, not a product with a news section
 2. **Content policy compliance / 内容政策合规** — no dangerous / deceptive / manipulated-media content; AI-generated content must be transparently disclosed
 3. **Technical compliance / 技术合规** — permanent URLs, HTML-rendered content, `robots.txt` must not block Googlebot-News
+
+---
+
+## 1.5 · Publisher Trust Detection 发布者信任度检测
+
+> **Layer 1 check.** Google evaluates whether the site operates as a legitimate news publisher before indexing it.
+
+### Step 1 — Verify trust pages
+
+Use WebFetch to check each URL. A page passes if it returns HTTP 200 with non-trivial content (not a redirect to homepage).
+
+| Page | URL pattern | Points |
+|------|-------------|--------|
+| About | `<domain>/about` | 8 pts |
+| Editorial Policy | `<domain>/editorial-policy` | 8 pts |
+| Contact | `<domain>/contact` | 8 pts |
+| Team | `<domain>/team` | 8 pts |
+| Authors | `<domain>/authors` | 8 pts |
+
+**Subtotal (pages): 40 pts**
+
+### Step 2 — Detect newsroom description
+
+Scan the About page text for presence of keywords indicating a professional newsroom:
+`newsroom` · `editorial team` · `journalism` · `reporters` · `editor-in-chief` · `press` · `media organization`
+
+- Keywords present → **30 pts**
+- Absent → **0 pts**, flag as P1: "No editorial identity statement found on About page"
+
+### Step 3 — Detect Organization Schema
+
+Check homepage and About page JSON-LD for `@type: Organization` or `@type: NewsMediaOrganization` with fields: `name`, `url`, `logo`.
+
+| Condition | Points |
+|-----------|--------|
+| All three fields present | 30 pts |
+| 1–2 fields present | 15 pts |
+| Schema absent | 0 pts |
+
+### Publisher Trust Score Output
+
+```
+Publisher Trust Score: [0-100]
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| /about | Pass ✅ / Fail ❌ | |
+| /editorial-policy | Pass ✅ / Fail ❌ | |
+| /contact | Pass ✅ / Fail ❌ | |
+| /team | Pass ✅ / Fail ❌ | |
+| /authors | Pass ✅ / Fail ❌ | |
+| Newsroom description | Pass ✅ / Fail ❌ | |
+| Organization Schema | Pass ✅ / Partial ⚠️ / Fail ❌ | [missing fields] |
+```
+
+---
+
+## 1.6 · Author Authority Detection 作者权威性检测
+
+> **Layer 1 check.** Google builds an author credibility graph. Unverifiable or AI-generated author attribution is a strong negative signal.
+
+### Step 1 — Verify author presence and schema match
+
+Check both:
+1. Visible byline on the page (author name in HTML)
+2. `author.name` in NewsArticle Schema
+
+| Condition | Result |
+|-----------|--------|
+| Both present and matching | Pass ✅ — 30 pts |
+| Schema author missing | Fail ❌ — 0 pts (P1) |
+| Mismatch between Schema and page byline | Fail ❌ — 0 pts (P0) |
+
+### Step 2 — Fetch author profile page
+
+Use WebFetch on the URL from `author.url` (Schema) or the byline hyperlink.
+
+A complete author profile requires:
+- Author name visible
+- Biography ≥ 50 words
+- At least one of: job title, social media link, publication count
+
+| Condition | Points |
+|-----------|--------|
+| Full profile (name + bio 50w+ + credential) | 40 pts |
+| Partial profile (name + bio only) | 20 pts |
+| Profile missing or 404 | 0 pts (P1) |
+
+### Step 3 — Detect suspicious AI author names
+
+Scan `author.name` (Schema) and page byline for:
+> `AI Agent` · `Bot` · `System Writer` · `Auto Writer` · `AI Writer` · `GPT` · `Claude` · `Gemini`
+
+- Match detected → flag as **P0**: "Suspicious AI author name detected — replace with human editor name" *(mark as needs human confirmation)*
+- No match → **10 pts**
+
+### Step 4 — Detect social / credential signals
+
+Check author profile for: Twitter/X link, LinkedIn link, professional email, years of experience mentioned in bio, or domain expertise statement.
+
+- 1+ signals present → **20 pts**
+- No signals → **0 pts**
+
+### Author Authority Score Output
+
+```
+Author Authority Score: [0-100]
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| Author byline present | Pass ✅ / Fail ❌ | |
+| Schema author.name matches byline | Pass ✅ / Mismatch ⚠️ / Fail ❌ | |
+| Author profile page | Full ✅ / Partial ⚠️ / Missing ❌ | |
+| No suspicious AI name | Pass ✅ / Flag ❌ | [matched keyword if flagged] |
+| Social / credential signal | Present ✅ / Absent ⚠️ | |
+```
 
 ---
 
@@ -240,12 +420,20 @@ If the same issue appears across multiple articles, fix at the template level.
 | Googlebot-News not blocked | No `Disallow` rule under `User-agent: Googlebot-News` covering the article path | P0 | Auto |
 | News Sitemap exists | Sitemap URL (from robots.txt or `<domain>/news-sitemap.xml`) is accessible and contains `<news:news>` tags | P1 | Auto |
 | News Sitemap has `<news:news>` tags | Sitemap is valid per Google News Sitemap spec | P1 | Auto |
+| News Sitemap freshness | At least one `<news:publication_date>` within the last 48 hours | P1 | Auto |
+| News Sitemap Health Score | accessible (30 pts) + valid news namespace (40 pts) + 48h freshness (30 pts) | — | Auto |
+| Crawlability Score | article text in HTML (30 pts) + server-rendered Schema (30 pts) + canonical valid (20 pts) + robots not blocking (20 pts) | — | Auto |
 | Core Web Vitals — LCP | LCP < 2.5s (Good); 2.5–4s (Needs Improvement ⚠️); > 4s (Poor ❌) | P1 | 🔍 Manual |
 | Core Web Vitals — INP | INP < 200ms (Good); 200–500ms (⚠️); > 500ms (❌) | P1 | 🔍 Manual |
 | Core Web Vitals — CLS | CLS < 0.1 (Good); 0.1–0.25 (⚠️); > 0.25 (❌) | P1 | 🔍 Manual |
 | HTTPS | Article URL uses `https://` | P0 | Auto |
 
 **CWV verification / CWV 验证：** Use PageSpeed Insights: `https://pagespeed.web.dev/report?url=<url>`
+
+**News Sitemap Health Score calculation:**
+```
+Score = (accessible ? 30 : 0) + (news namespace valid ? 40 : 0) + (article within 48h ? 30 : 0)
+```
 
 ---
 
@@ -287,16 +475,331 @@ If the same issue appears across multiple articles, fix at the template level.
 
 ---
 
+## 5.7 · Crawlability and Rendering Check 爬取与渲染检测
+
+> **Layer 1 check.** Verifies that Googlebot can access and read the article content without JavaScript execution.
+
+### Step 1 — Fetch with Googlebot UA
+
+```bash
+TMPFILE=$(mktemp /tmp/crawl_XXXXXX)
+curl -sL \
+  -H "User-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" \
+  --max-time 15 \
+  "<ARTICLE_URL>" > "$TMPFILE" 2>&1
+echo "File size: $(wc -c < "$TMPFILE") bytes"
+```
+
+### Step 2 — Detect article body in initial HTML
+
+```bash
+cat > /tmp/check_body.py << 'PYEOF'
+import re
+html = open('TMPFILE_PATH').read()
+clean = re.sub(r'<(script|style)[^>]*>.*?</(script|style)>', '', html, flags=re.DOTALL|re.IGNORECASE)
+clean = re.sub(r'<[^>]+>', ' ', clean)
+clean = re.sub(r'\s+', ' ', clean).strip()
+print(f"Visible text length: {len(clean)} chars")
+print(f"First 300 chars: {clean[:300]}")
+PYEOF
+sed -i '' "s|TMPFILE_PATH|$TMPFILE|g" /tmp/check_body.py
+python3 /tmp/check_body.py
+```
+
+- ≥ 200 chars of visible text → **article text present** → 30 pts
+- < 200 chars → flag: "Article text not detected in initial HTML — recommend verifying with [Rich Results Test](https://search.google.com/test/rich-results)"
+
+> ❌ Do NOT label as "client-side rendered" — only say "article text not detected in initial HTML"
+
+### Step 3 — Detect server-rendered Schema
+
+Check whether raw HTML contains `<script type="application/ld+json">` with `"@type": "NewsArticle"` before any dynamically loaded bundles.
+
+| Result | Points | Note |
+|--------|--------|------|
+| NewsArticle Schema in raw HTML | 30 pts | Server-rendered ✅ |
+| JSON-LD found but no NewsArticle type | 15 pts | Partial |
+| No JSON-LD in raw HTML | 0 pts | Flag: "Potential hydration-only Schema — verify Next.js/Nuxt SSR is configured to pre-render Schema (use `getServerSideProps` or static export)" |
+
+### Step 4 — Verify canonical and robots
+
+- Canonical tag present and pointing to article URL → **20 pts**
+- Not blocked by robots.txt for Googlebot or Googlebot-News → **20 pts**
+
+### Crawlability Score Output
+
+```
+Crawlability Score: [0-100]
+
+| Check | Result | Points | Notes |
+|-------|--------|--------|-------|
+| Article text in initial HTML | Pass ✅ / Fail ❌ | 30 / 0 | |
+| Server-rendered Schema | Full ✅ / Partial ⚠️ / Absent ❌ | 30/15/0 | |
+| Canonical tag valid | Pass ✅ / Fail ❌ | 20 / 0 | |
+| Not blocked by robots | Pass ✅ / Fail ❌ | 20 / 0 | |
+```
+
+---
+
+## 5.8 · URL Structure Analysis URL 结构分析
+
+> **Layer 1 check.** URL patterns affect Googlebot's ability to recognize and categorize news content.
+
+### Recommended patterns ✅
+
+- `/news/<descriptive-slug>`
+- `/article/<descriptive-slug>`
+- `/<year>/<month>/<descriptive-slug>`
+- `/<category>/<descriptive-slug>`
+
+### Problematic patterns ❌
+
+| Pattern | Example | Priority | Recommendation |
+|---------|---------|----------|----------------|
+| Query-parameter article ID | `?id=123`, `?article_id=456`, `?p=789`, `?postid=1` | P1 | Migrate to path-based URL; implement 301 redirect |
+| Numeric-only slug | `/news/12345` (no keywords) | P2 | Add descriptive keywords to URL slug |
+| Session ID in URL | `?session=abc`, `?PHPSESSID=` | P0 | Remove session parameters from indexable URLs |
+| Tracking params without canonical | `?utm_source=` without self-referencing canonical | P1 | Ensure canonical points to clean URL |
+
+### Output
+
+```
+URL Structure: [Recommended ✅ / Needs Improvement ⚠️ / Problematic ❌]
+Detected pattern: [pattern description]
+Issues found: [list or "None"]
+```
+
+---
+
+## 5.9 · Freshness Signal Analysis 新鲜度信号分析
+
+> **Layer 2 check.** Google News heavily weights freshness; publication timing is a competitive ranking factor.
+
+### Step 1 — Validate datePublished / dateModified
+
+| Check | Pass Condition | Priority | Points |
+|-------|---------------|----------|--------|
+| datePublished present | ISO 8601 timestamp in Schema | P0 | required |
+| dateModified ≥ datePublished | Modified timestamp not earlier than published | P0 | 30 pts if valid |
+| No excessive modification | Not modified > 5× within 24 hours | P1 | deduct 15 if flagged |
+
+### Step 2 — Estimate publication speed
+
+Compare `datePublished` with the article's `<news:publication_date>` in the News Sitemap (if available), or use HTTP `Last-Modified` / `Date` response headers as proxy.
+
+| Speed | Condition | Points |
+|-------|-----------|--------|
+| Fast | Sitemap entry within 30 min of datePublished | 40 pts |
+| Moderate | 30 min – 1 hour gap | 20 pts |
+| Slow | > 1 hour gap | 0 pts |
+
+### Step 3 — Flag manipulation signals
+
+- `dateModified` updated repeatedly with no detectable content change → flag as "possible freshness manipulation" (P1)
+- `datePublished` set in the future → flag as P0 error
+
+### Freshness Score Output
+
+```
+Freshness Score: [0-100]
+
+| Signal | Result | Points |
+|--------|--------|--------|
+| datePublished / dateModified valid | Pass ✅ / Fail ❌ | 30 / 0 |
+| Publication speed | Fast ✅ / Moderate ⚠️ / Slow ❌ | 40/20/0 |
+| No manipulation signals | Pass ✅ / Flagged ⚠️ | 30 / 15 |
+```
+
+---
+
+## 5.10 · Content Type Classification 内容类型分类
+
+> **Layer 2 check.** Content type affects cluster placement, ranking duration, and competitive differentiation.
+
+### Step 1 — Classify article type
+
+Evaluate based on headline, body length, quote count, and source references:
+
+| Type | Signals | Base Score |
+|------|---------|------------|
+| **Breaking News** | Published within 2h of event; headline includes "Breaking", "Just In", "Developing"; body < 600 words | 90–100 |
+| **Analysis** | Body 800+ words; 3+ named sources or citations; analytical headline ("Why", "How", "What This Means For") | 70–90 |
+| **Digest / Roundup** | 5+ outbound links to sources; "Roundup", "Weekly", "Today's News" in headline | 40–60 |
+| **Aggregation** | No direct quotes; no named reporter byline; summarizes other sources only | 20–40 |
+
+### Step 2 — Detect AI template patterns
+
+Scan H2/H3 headings within the article body for:
+> `Key Takeaways` · `Pros and Cons` · `Opposing Views` · `Summary` · `FAQ` · `Related Topics` · `Bottom Line`
+
+- Any pattern detected → flag as "AI template structure detected" (P1) → **deduct 20 pts** from base score
+- Recommend restructuring to inverted-pyramid news format
+
+### Content Type Score Output
+
+```
+Content Type: [Breaking News / Analysis / Digest / Aggregation]
+AI Template Detected: [Yes ⚠️ / No ✅]
+Content Type Score: [0-100]
+```
+
+---
+
+## 5.11 · Publisher Authority Estimation 发布者权威估算
+
+> **Layer 2 check.** Google evaluates publisher-level authority when ranking articles in topic clusters.
+
+Estimate publisher authority using available signals:
+
+| Signal | How to check | Points |
+|--------|-------------|--------|
+| Article volume | Count total articles in News Sitemap; 10+ = strong, 3–9 = moderate, < 3 = low | 25 pts |
+| Organization Schema | `@type: Organization` or `NewsMediaOrganization` present on homepage | 25 pts |
+| Brand mentions | WebSearch `"<publisher name>" news` — check result count and source quality | 25 pts |
+| Internal link structure | Article pages link to author pages, topic hubs, related articles | 25 pts |
+
+### Publisher Authority Score Output
+
+```
+Publisher Authority Score: [0-100]
+
+| Signal | Result | Notes |
+|--------|--------|-------|
+| Article volume | Strong ✅ / Moderate ⚠️ / Low ❌ | [count] |
+| Organization Schema | Present ✅ / Absent ❌ | |
+| Brand mentions | Strong ✅ / Moderate ⚠️ / Weak ❌ | |
+| Internal link structure | Good ✅ / Partial ⚠️ / Poor ❌ | |
+```
+
+---
+
+## 5.12 · Topic Cluster Compatibility 话题聚类兼容性
+
+> **Layer 2 check.** Google News groups articles about the same event into topic clusters; these signals determine cluster membership.
+
+### Step 1 — Headline entity analysis
+
+Check whether the headline contains at least one named entity (person, organization, location, financial instrument, or event name).
+
+- Named entity present → **25 pts**; note the detected entity
+- Generic headline (no named entities) → **0 pts** (P1): "Add specific entity names to headline for cluster matching"
+
+### Step 2 — Entity density in body
+
+Count named entities per 100 words in the article body (use recognizable proper nouns as proxy):
+
+- ≥ 1 entity per 100 words → **25 pts**
+- < 1 entity per 200 words → **0 pts** (P1): "Increase named entity density — add specific company names, people, or locations"
+
+### Step 3 — Timeliness check
+
+- Article published within 6 hours of the referenced event → **25 pts**
+- Published 6–24 hours after → **15 pts**
+- Published > 24 hours after → **0 pts**
+
+### Step 4 — Original reporting signals
+
+Check for any of:
+- Direct quoted speech with attribution (`"…" said [Name]`)
+- Exclusive data, statistics, or documents
+- Bylined reporter with a domain-specific author profile
+
+- 1+ signals present → **25 pts**
+- None detected → **0 pts** (P1): "Add original reporting signals — direct quotes or exclusive data"
+
+### Topic Cluster Compatibility Score Output
+
+```
+Topic Cluster Compatibility Score: [0-100]
+
+| Signal | Result | Points |
+|--------|--------|--------|
+| Headline named entity | Present ✅ / Absent ❌ | 25 / 0 |
+| Entity density | High ✅ / Low ❌ | 25 / 0 |
+| Timeliness | < 6h ✅ / 6-24h ⚠️ / > 24h ❌ | 25/15/0 |
+| Original reporting | Present ✅ / Absent ❌ | 25 / 0 |
+```
+
+---
+
+## 5.13 · Top Stories Detection Top Stories 检测
+
+> **Layer 2 check.** Determines whether the article topic triggers a Google Top Stories carousel and whether the analyzed site appears in it.
+
+### Step 1 — Extract topic keyword
+
+From the article headline, identify the primary entity or event name. Use the most specific named entity (e.g., "Apple WWDC 2026" rather than "tech event").
+
+### Step 2 — Search for Top Stories carousel
+
+Use WebSearch to search the topic keyword. Analyze results for:
+- A "Top Stories", "News", or "In the News" carousel module
+- Publisher names and headlines appearing in the carousel
+- Timestamps of carousel articles
+
+| Result | Output |
+|--------|--------|
+| Top Stories carousel found | Topic triggers Top Stories; extract publisher list |
+| No carousel found | "No Top Stories carousel detected for this topic" |
+
+### Step 3 — Compare site against carousel publishers
+
+Check whether the analyzed domain appears in the list of carousel publishers.
+
+| Result | Status |
+|--------|--------|
+| Analyzed site in carousel | Top Stories Presence: **Confirmed** ✅ |
+| Analyzed site absent, competitors present | Top Stories Presence: **Gap detected** ❌ |
+| No carousel exists | Top Stories Presence: **Topic not triggering carousel** ⚠️ |
+
+### Output
+
+```
+Top Stories Presence: [Confirmed ✅ / Gap detected ❌ / Not triggering ⚠️]
+
+Competitors in carousel:
+| Publisher | Headline | Published |
+|-----------|----------|-----------|
+| [name] | [headline] | [time] |
+```
+
+---
+
 ## 6 · Output Report Format 总结报告格式
 
-After analysis, output the report in three parts: Executive Summary → Detailed Check Tables → Priority Fix List.
-分析完成后按三段输出：执行摘要 → 逐项检查表 → 优先级修复列表。
+After analysis, output the report in the following structure.
+分析完成后按对应结构输出。
+
+**Full Diagnostic mode** (Section 10 triggered):
+System Model → Dual-Layer Scorecard → Executive Summary → Detailed Check Tables → Competitor Gap Analysis → Priority Fix List
+
+**Article / Scoped audit mode**:
+Executive Summary → Detailed Check Tables → Priority Fix List
+
+---
+
+### Dual-Layer Scorecard (Full Diagnostic only)
+
+Output at the top of Full Diagnostic reports, before the Executive Summary.
+
+```
+## Google News Diagnostic Report
+
+**Google News SEO Score: XX / 100**  [🟢 Strong / 🟡 Developing / 🔴 At Risk]
+
+| Layer | Score | Status |
+|-------|-------|--------|
+| Layer 1 — Index Eligibility | XX/100 | Pass ✅ / Partial ⚠️ / Fail ❌ |
+| Layer 2 — Ranking Potential | XX/100 | Pass ✅ / Partial ⚠️ / Fail ❌ |
+
+**Diagnosis**: [plain-language statement — see Section 10 for routing logic]
+```
 
 ---
 
 ### Executive Summary 执行摘要
 
-Output this section first, before all detailed tables.
+Output this section first (after Dual-Layer Scorecard if present), before all detailed tables.
 
 **Overall Health / 总体健康度：**
 
@@ -361,9 +864,80 @@ If none qualify: *"No quick wins identified — remaining issues require develop
 
 ---
 
+## 6.5 · Competitor Gap Analysis 竞争对手差距分析
+
+> **Run during Full Diagnostic or when the user asks "why do competitors rank higher?" / "为什么竞争对手排名更高？"**
+
+### Step 1 — Identify top competitors
+
+Use WebSearch to search: `"<article topic>" news`
+
+Extract the top 3–5 news publisher results: domain, headline, publish timestamp.
+
+```
+Competitors detected:
+| Rank | Publisher | Headline | Published |
+|------|-----------|----------|-----------|
+| 1 | [domain] | [headline] | [time] |
+```
+
+### Step 2 — Fetch competitor articles
+
+For each competitor URL, use the three-phase fetch protocol (WebFetch → curl → Manual) to extract:
+- `datePublished` from Schema or page
+- NewsArticle Schema completeness: count present required fields out of 9 (`@type`, `headline`, `image`, `datePublished`, `dateModified`, `author`, `publisher`, `publisher.logo`, `mainEntityOfPage`)
+- Author authority: named author with linked profile page (Yes / Partial / No)
+
+### Step 3 — Compute gap metrics
+
+**Publication speed gap:**
+```
+Your site: datePublished → [timestamp]
+Earliest competitor: [publisher] → [timestamp]
+Gap: [X minutes / hours] → [Advantage ✅ / Disadvantage ❌]
+```
+
+**Full comparison table:**
+```
+| Publisher | Schema Completeness | Author Authority | Publish Speed |
+|-----------|---------------------|------------------|---------------|
+| Your site | XX% (X/9 fields) | Full / Partial / None | [timestamp] |
+| [Competitor 1] | XX% | Full / Partial / None | [timestamp] |
+| [Competitor 2] | XX% | Full / Partial / None | [timestamp] |
+```
+
+### Step 4 — Output gap analysis summary
+
+```
+## Competitor Gap Analysis
+
+**Topic**: [search topic]
+**Competitors analyzed**: [N]
+
+### Key Gaps
+
+**Publication Speed**
+Your site: [X min after event]
+Competitors avg: [Y min after event]
+Gap: [difference] → [recommendation if gap > 15 min]
+
+**Schema Completeness**
+Your site: [XX%]
+Competitors avg: [XX%]
+Gap: [difference] → [recommendation if gap > 10%]
+
+**Author Authority**
+[Competitors provide full author profiles / Your site matches competitor standard]
+
+### Recommendations
+- [Specific action to close each identified gap]
+```
+
+---
+
 ## 7 · EEAT Scan 触发与输入处理
 
-**Trigger words / 触发词**：  
+**Trigger words / 触发词**：
 `EEAT 扫描` / `Run EEAT scan` / `扫描 EEAT` / `EEAT audit` / `EEAT 审计` / `做个 EEAT 扫描`
 
 **Step 1 — Read the signal checklist / 第一步：读取检查项清单**
@@ -496,9 +1070,125 @@ Use the **same language as the user's prompt** throughout (Chinese prompt → Ch
 
 ---
 
+## 10 · Google News Diagnostic Report 完整诊断报告
+
+> **Trigger**: Run this section when scope is "Full Diagnostic", or when the user asks why their site is not in Google News / why articles don't rank / why competitors outrank them.
+
+### Score Aggregation / 评分聚合
+
+**Google News SEO Score = Layer 1 Score × 60% + Layer 2 Score × 40%**
+
+**Layer 1 — Index Eligibility (60% weight)**
+
+| Sub-check | Weight |
+|-----------|--------|
+| Publisher Trust Score | 15% |
+| Author Authority Score | 15% |
+| Schema Health (completeness %) | 15% |
+| News Sitemap Health Score | 10% |
+| Crawlability Score | 5% |
+
+**Layer 2 — Ranking Potential (40% weight)**
+
+| Sub-check | Weight |
+|-----------|--------|
+| Freshness Score | 15% |
+| Content Type Score | 10% |
+| Topic Cluster Compatibility Score | 10% |
+| Top Stories Presence (binary: 5 or 0 pts) | 5% |
+
+**Rating labels:**
+
+| Score | Label |
+|-------|-------|
+| 80–100 | 🟢 Strong |
+| 50–79 | 🟡 Developing |
+| 0–49 | 🔴 At Risk |
+
+---
+
+### Diagnosis Routing / 诊断结论路由
+
+| Condition | Diagnosis Statement |
+|-----------|-------------------|
+| Layer 1 score < 50 | "Primary issue: This site is likely not eligible for Google News indexing. Fix Layer 1 issues before optimizing for ranking." |
+| Layer 1 50–69 (Partial) | "Site has partial Google News index presence. Resolve remaining Layer 1 gaps to achieve consistent indexing, then address Layer 2 ranking." |
+| Layer 1 ≥ 70, Layer 2 < 50 | "Site is indexed but articles are not competitive in Google News clusters. Focus on Layer 2 ranking improvements." |
+| Layer 1 ≥ 70, Layer 2 ≥ 70 | "Site and articles meet Google News baseline requirements. Competitor gap analysis shows remaining optimization opportunities." |
+
+---
+
+### Full Diagnostic Report Template / 完整诊断报告模板
+
+```
+## Google News Diagnostic Report
+
+**Analyzed**: [URL or domain]
+**Date**: [YYYY-MM-DD]
+**Google News SEO Score**: XX / 100  🟢 Strong / 🟡 Developing / 🔴 At Risk
+
+---
+
+### Dual-Layer Scorecard
+
+| Layer | Score | Status |
+|-------|-------|--------|
+| Layer 1 — Index Eligibility | XX/100 | Pass ✅ / Partial ⚠️ / Fail ❌ |
+| Layer 2 — Ranking Potential | XX/100 | Pass ✅ / Partial ⚠️ / Fail ❌ |
+
+**Diagnosis**: [statement from routing table above]
+
+---
+
+### Layer 1 — Index Eligibility
+
+| Check | Score | Status |
+|-------|-------|--------|
+| News Index Status | — | Not Indexed ❌ / Limited ⚠️ / Strong ✅ |
+| Publisher Trust | XX/100 | Pass / Partial / Fail |
+| Author Authority | XX/100 | Pass / Partial / Fail |
+| Schema Health | XX% complete | Pass / Partial / Fail |
+| News Sitemap Health | XX/100 | Pass / Partial / Fail |
+| Crawlability | XX/100 | Pass / Partial / Fail |
+| URL Structure | — | Recommended ✅ / Issues ⚠️ |
+
+---
+
+### Layer 2 — Ranking Potential
+
+| Check | Score | Status |
+|-------|-------|--------|
+| Freshness | XX/100 | Fast ✅ / Moderate ⚠️ / Slow ❌ |
+| Content Type | [type] / XX pts | Breaking / Analysis / Digest / Aggregation |
+| Publisher Authority | XX/100 | Strong / Moderate / Weak |
+| Topic Cluster Compatibility | XX/100 | High / Medium / Low |
+| Top Stories Presence | — | Confirmed ✅ / Gap ❌ / Not triggering ⚠️ |
+
+---
+
+### Competitor Gap Analysis Summary
+
+[See Section 6.5 output]
+
+---
+
+### Priority Fix List
+
+**P0 — Fix immediately (blocks indexing)**
+- [item]
+
+**P1 — Fix soon (affects ranking)**
+- [item]
+
+**P2 — Best practice**
+- [item]
+```
+
+---
+
 ## References 参考资源
 
-- Google News ranking factors, optimization strategies, AI content policy, News Sitemap examples:
+- Google News ranking factors, optimization strategies, AI content policy, News Sitemap examples, two-layer architecture model, Topic Cluster signals:
   见 [reference.md](reference.md)
 - EEAT signal definitions and priority table:
   见 [eeat-reference.md](eeat-reference.md)

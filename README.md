@@ -255,6 +255,33 @@ AI-powered git repository analysis. Extracts structured insights from commits, P
 
 ---
 
+### insight-pdf
+
+Generates professional corporate/business report PDFs with advanced visualizations and modern design. Uses ECharts for rich charts (heatmaps, radar, gauge, sankey), infographic components (progress bars, timelines, comparison blocks), and enterprise-grade typography.
+
+**Use when:**
+- "Generate a PDF report from this data"
+- "Create a professional business report PDF"
+- "Make an enterprise report with charts and visualizations"
+- 生成专业 PDF 报告 / 创建企业级报告
+
+**Features:**
+- **Advanced visualizations**: ECharts integration with heatmaps, radar charts, gauges, sankey diagrams
+- **Infographic components**: Progress bars, comparison blocks, timelines, stat cards, callout boxes
+- **Professional design**: Gradient covers, 8-color palette, enhanced tables, badges
+- **Clean output**: Generates only the final PDF in user's project directory (no HTML/node_modules pollution)
+- **Template-based**: Uses HTML templates with placeholder system for easy customization
+
+**Output:**
+```
+project/
+└── report.pdf    # Professional PDF with charts and infographics
+```
+
+**Prerequisites:** Playwright Chromium installed in skill directory (one-time setup: `cd ~/.cursor/skills/insight-pdf && npm install && npx playwright install chromium`)
+
+---
+
 ## Usage
 
 Skills are loaded on demand. When the user's message matches the skill's trigger phrases, the agent reads `SKILL.md` and applies its instructions.
@@ -294,6 +321,13 @@ Generate release notes from v1.2.0 to v1.3.0
 Is branch feature/payment-refactor risky?
 What does branch feature/api-rewrite affect?
 Who should review this PR?
+```
+
+```
+# insight-pdf
+Generate a professional PDF report from this analysis data
+Create an enterprise report with charts showing Q4 revenue trends
+生成一份包含数据可视化的专业 PDF 报告
 ```
 
 ## What are Agent Skills?

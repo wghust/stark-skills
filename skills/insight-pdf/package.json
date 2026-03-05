@@ -1,0 +1,13 @@
+{
+  "name": "insight-pdf",
+  "version": "1.0.0",
+  "description": "HTML to PDF conversion for insight-pdf skill",
+  "private": true,
+  "scripts": {
+    "convert": "node scripts/convert.js",
+    "postinstall": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}
