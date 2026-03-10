@@ -93,7 +93,7 @@ Format output using **GFM (GitHub Flavored Markdown) tables**. One table per rep
 
 **Table columns:** 序号 (or #) | 标题 (or Title) | 状态 (or State) | 链接 (or URL)
 
-**Link column:** Use plain URL for direct copy, or `[#12345](url)` for clickable links.
+**Link column:** MUST use Markdown link syntax `[issues#<number>](url)` so the displayed text is short (e.g., `issues#12345`) and clickable, navigating to the full GitHub Issue URL.
 
 **English format:**
 ```markdown
@@ -102,8 +102,8 @@ Format output using **GFM (GitHub Flavored Markdown) tables**. One table per rep
 ### Repository: facebook/react
 | # | Title | State | URL |
 |------|------|------|------|
-| 1 | [#12345] Component re-renders unexpectedly | Open | https://github.com/facebook/react/issues/12345 |
-| 2 | [#12340] Memory leak in useEffect | Closed | https://github.com/facebook/react/issues/12340 |
+| 1 | [#12345] Component re-renders unexpectedly | Open | [issues#12345](https://github.com/facebook/react/issues/12345) |
+| 2 | [#12340] Memory leak in useEffect | Closed | [issues#12340](https://github.com/facebook/react/issues/12340) |
 ```
 
 **Chinese format:**
@@ -113,8 +113,8 @@ Format output using **GFM (GitHub Flavored Markdown) tables**. One table per rep
 ### 仓库: facebook/react
 | 序号 | 标题 | 状态 | 链接 |
 |------|------|------|------|
-| 1 | [#12345] 组件意外重新渲染 | Open | https://github.com/facebook/react/issues/12345 |
-| 2 | [#12340] useEffect 内存泄漏 | Closed | https://github.com/facebook/react/issues/12340 |
+| 1 | [#12345] 组件意外重新渲染 | Open | [issues#12345](https://github.com/facebook/react/issues/12345) |
+| 2 | [#12340] useEffect 内存泄漏 | Closed | [issues#12340](https://github.com/facebook/react/issues/12340) |
 ```
 
 ---
