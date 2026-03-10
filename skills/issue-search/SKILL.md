@@ -89,18 +89,21 @@ WebFetch(url, prompt="Extract GitHub issues from this search page. For each issu
 
 ### Step 3 · Present Results
 
-Format output by repository:
+Format output using **GFM (GitHub Flavored Markdown) tables**. One table per repository; when multiple repos are searched, show each repo's table separately with its identifier above.
+
+**Table columns:** 序号 (or #) | 标题 (or Title) | 状态 (or State) | 链接 (or URL)
+
+**Link column:** Use plain URL for direct copy, or `[#12345](url)` for clickable links.
 
 **English format:**
 ```markdown
 ## Related GitHub Issues
 
 ### Repository: facebook/react
-1. [#12345] Component re-renders unexpectedly (Open)
-   https://github.com/facebook/react/issues/12345
-
-2. [#12340] Memory leak in useEffect (Closed)
-   https://github.com/facebook/react/issues/12340
+| # | Title | State | URL |
+|------|------|------|------|
+| 1 | [#12345] Component re-renders unexpectedly | Open | https://github.com/facebook/react/issues/12345 |
+| 2 | [#12340] Memory leak in useEffect | Closed | https://github.com/facebook/react/issues/12340 |
 ```
 
 **Chinese format:**
@@ -108,11 +111,10 @@ Format output by repository:
 ## 相关 GitHub Issues
 
 ### 仓库: facebook/react
-1. [#12345] 组件意外重新渲染 (Open)
-   https://github.com/facebook/react/issues/12345
-
-2. [#12340] useEffect 内存泄漏 (Closed)
-   https://github.com/facebook/react/issues/12340
+| 序号 | 标题 | 状态 | 链接 |
+|------|------|------|------|
+| 1 | [#12345] 组件意外重新渲染 | Open | https://github.com/facebook/react/issues/12345 |
+| 2 | [#12340] useEffect 内存泄漏 | Closed | https://github.com/facebook/react/issues/12340 |
 ```
 
 ---
