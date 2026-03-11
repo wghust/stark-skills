@@ -89,64 +89,7 @@ WebFetch(url, prompt="Extract GitHub issues from this search page. For each issu
 
 ### Step 3 · Present Results
 
-Format output using **GFM (GitHub Flavored Markdown) tables**. One table per repository; when multiple repos are searched, show each repo's table separately with its identifier above.
-
-**Table columns:** 序号 (or #) | 标题 (or Title) | 状态 (or State) | 链接 (or URL)
-
-**Link column:** MUST use Markdown link syntax `[issues#<number>](url)` so the displayed text is short (e.g., `issues#12345`) and clickable, navigating to the full GitHub Issue URL.
-
-**English format:**
-```markdown
-## Related GitHub Issues
-
-### Repository: facebook/react
-| # | Title | State | URL |
-|------|------|------|------|
-| 1 | [#12345] Component re-renders unexpectedly | Open | [issues#12345](https://github.com/facebook/react/issues/12345) |
-| 2 | [#12340] Memory leak in useEffect | Closed | [issues#12340](https://github.com/facebook/react/issues/12340) |
-```
-
-**Chinese format:**
-```markdown
-## 相关 GitHub Issues
-
-### 仓库: facebook/react
-| 序号 | 标题 | 状态 | 链接 |
-|------|------|------|------|
-| 1 | [#12345] 组件意外重新渲染 | Open | [issues#12345](https://github.com/facebook/react/issues/12345) |
-| 2 | [#12340] useEffect 内存泄漏 | Closed | [issues#12340](https://github.com/facebook/react/issues/12340) |
-```
-
-### Output Constraints
-
-The output for Step 3 MUST follow these rules strictly:
-
-1. **Table-only output**: The response MUST contain ONLY the section heading (`## 相关 GitHub Issues` / `## Related GitHub Issues`), per-repository sub-headings, and GFM tables. No additional prose, annotations, footnotes, or bullet lists MAY appear outside the table.
-
-2. **One row per issue**: Each issue MUST occupy exactly one table row. Do NOT insert paragraphs, horizontal rules (`---`), or bullet lists between table rows or after the last table.
-
-3. **Forbidden sections**: Do NOT add sections such as "重点说明"、"更多结果可查看"、"Key Notes"、"See also" or any similar commentary — these break the table structure.
-
-4. **Pipe character escaping**: If an issue title contains a `|` character, it MUST be escaped as `\|` before placing it in a table cell to prevent column boundary corruption.
-
-**Correct output (Chinese):**
-```markdown
-## 相关 GitHub Issues
-
-### 仓库: vercel/next.js
-| 序号 | 标题 | 状态 | 链接 |
-|------|------|------|------|
-| 1 | fix: handle a\|b edge case | Open | [issues#12345](https://github.com/vercel/next.js/issues/12345) |
-```
-
-**Wrong output (do NOT generate):**
-```markdown
-| 1 | some title | Open | [issues#12345](...) |
----
-重点说明:
-- ...
-更多结果可查看: ...
-```
+展示每个 issue 的关键信息：**标题、状态、可点击链接**。具体呈现格式由 AI 根据上下文自主决定。
 
 ---
 
