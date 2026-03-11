@@ -117,6 +117,37 @@ Format output using **GFM (GitHub Flavored Markdown) tables**. One table per rep
 | 2 | [#12340] useEffect 内存泄漏 | Closed | [issues#12340](https://github.com/facebook/react/issues/12340) |
 ```
 
+### Output Constraints
+
+The output for Step 3 MUST follow these rules strictly:
+
+1. **Table-only output**: The response MUST contain ONLY the section heading (`## 相关 GitHub Issues` / `## Related GitHub Issues`), per-repository sub-headings, and GFM tables. No additional prose, annotations, footnotes, or bullet lists MAY appear outside the table.
+
+2. **One row per issue**: Each issue MUST occupy exactly one table row. Do NOT insert paragraphs, horizontal rules (`---`), or bullet lists between table rows or after the last table.
+
+3. **Forbidden sections**: Do NOT add sections such as "重点说明"、"更多结果可查看"、"Key Notes"、"See also" or any similar commentary — these break the table structure.
+
+4. **Pipe character escaping**: If an issue title contains a `|` character, it MUST be escaped as `\|` before placing it in a table cell to prevent column boundary corruption.
+
+**Correct output (Chinese):**
+```markdown
+## 相关 GitHub Issues
+
+### 仓库: vercel/next.js
+| 序号 | 标题 | 状态 | 链接 |
+|------|------|------|------|
+| 1 | fix: handle a\|b edge case | Open | [issues#12345](https://github.com/vercel/next.js/issues/12345) |
+```
+
+**Wrong output (do NOT generate):**
+```markdown
+| 1 | some title | Open | [issues#12345](...) |
+---
+重点说明:
+- ...
+更多结果可查看: ...
+```
+
 ---
 
 ## Error Handling
