@@ -59,6 +59,14 @@ Activate when user asks about OpenClaw usage: deployment, channel integration, c
 3. **Read** matching regions with context (e.g., ±50 lines)
 4. If no hits or content insufficient → treat as "reference no cover"
 
+**Query → Section mapping** (优先 Read 对应段落以快速获取完整回答):
+| 查询示例 | reference 段落 |
+|----------|----------------|
+| 国内云、阿里云、腾讯云、百度、火山、华为、扣子、一键部署 | `## 国内云厂商一键部署` |
+| xxx 接入、Telegram/Discord/飞书/钉钉/QQ/WhatsApp | `## Channels 渠道` 及对应子节 |
+| 首次配置、gateway.auth、openclaw doctor、backup | `### 首次配置 Initial Configuration` |
+| 远程访问、Tailscale、SSH 端口转发 | `### 远程访问 Remote Access` |
+
 ---
 
 ### Step 2 · Retrieve from Official Docs

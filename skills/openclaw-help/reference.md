@@ -63,6 +63,82 @@ openclaw onboard --install-daemon
 curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
+### 本地安装 Local Installation
+
+- **npm**: `npm install -g openclaw@latest` → `openclaw onboard --install-daemon`
+- **一键脚本** (macOS/Linux): `curl -fsSL https://openclaw.ai/install.sh | bash`
+- **macOS**: 需 Xcode Command Line Tools (`xcode-select --install`)
+- **Windows**: 强烈推荐 WSL2，在 Ubuntu 内按 Linux 流程安装
+- **守护进程**: macOS 用 launchd，Linux 用 systemd；Gateway 监听 ws://127.0.0.1:18789
+
+### 国内云厂商一键部署
+
+所有主流云厂商支持 OpenClaw 一键部署，差异在价格和 IM 生态。
+
+#### 阿里云
+
+| 项目 | 详情 |
+|------|------|
+| 配置 | 2vCPU + 2GiB + 40GiB ESSD，Alibaba Cloud Linux 3 |
+| 价格 | 限时秒杀 9.9元/月，包年约 68元/年 |
+| 模型 | 默认 qwen3.5-plus；百炼 Coding Plan Lite 首月 10元 |
+| IM | 钉钉、飞书（openclaw-china） |
+| 步骤 | 1) 购买预装镜像轻量服务器 2) 放通 18789、3000 端口，配百炼 API Key 3) 访问 http://IP:3000 |
+| 注意 | 9.9元/月需抢；续费比新购贵 |
+
+#### 腾讯云
+
+| 项目 | 详情 |
+|------|------|
+| 配置 | 推荐 2核4G，最低 2核2G |
+| 价格 | 新人约 17元/月，一年 99元起 |
+| 模型 | Coding Plan 首月 7.9元起（GLM-5、kimi、MiniMax 等） |
+| IM | 企微、QQ、钉钉、飞书（四大 IM 全覆盖） |
+| 步骤 | 1) 购买 Lighthouse 2) 应用模板→AI智能体→OpenClaw 3) 购 Coding Plan + 接入 IM |
+| 注意 | 支持限时同价续费 |
+
+#### 百度智能云
+
+| 项目 | 详情 |
+|------|------|
+| 配置 | 2核4G 4M 带宽 |
+| 价格 | 首月 0.01元（每日限量 500 台），常规 70~140元/月 |
+| 模型 | 千帆：文心、Qwen、DeepSeek 系列 |
+| IM | 钉钉、飞书 |
+| 步骤 | 1) 购买轻量服务器选 OpenClaw 镜像 2) 自动安装 3) 页面选模型 4) 对接 IM |
+| 注意 | 0.01元需抢；续费较高，建议仅体验 |
+
+#### 火山引擎
+
+| 项目 | 详情 |
+|------|------|
+| 配置 | 2核4G，支持云手机 |
+| 价格 | 活动 9.9元/月；方舟组合套餐 19.8元/月（服务器+模型） |
+| 模型 | 方舟平台，内置可用 |
+| IM | 飞书（深度集成）、企微、钉钉、QQ |
+| 步骤 | 1) 购买云服务器/云手机选 OpenClaw 模板 2) 配置方舟 Coding Plan 3) 接入飞书 |
+| 注意 | 综合性价比最高；飞书用户首选 |
+
+#### 华为云
+
+| 项目 | 详情 |
+|------|------|
+| 配置 | Flexus L 实例，需 EIP + 安全组 |
+| 价格 | ~85~155元/月 |
+| 模型 | MaaS 控制台单独开通 |
+| 步骤 | 5步+（实例→EIP→安全组→安装→配模型） |
+| 注意 | 企业合规最强；个人用户步骤较多 |
+
+#### 扣子编程 Coze Code
+
+| 项目 | 详情 |
+|------|------|
+| 配置 | 无需服务器 |
+| 价格 | ¥49/月（基础）或 ¥99/月（进阶），免费版不支持 |
+| 模型 | Seed 2.0、DeepSeek、GLM-4.7 等 |
+| 步骤 | 1) 访问 code.coze.cn 2) 一键部署或从案例创建 3) 确认即完成 |
+| 注意 | 零门槛；数据在第三方；成本敏感可选火山+DeepSeek 约¥19/月起 |
+
 ### 按场景推荐
 
 | 场景 | 首选 | 备选 |
@@ -74,21 +150,56 @@ curl -fsSL https://openclaw.ai/install.sh | bash
 | 企业合规 | 华为云 | 阿里云 |
 | 海外/开发者 | Railway | Zeabur |
 
-### Docker
+### Docker 部署
 
 ```bash
+git clone https://github.com/openclaw/openclaw.git && cd openclaw
 docker-compose up -d
 ```
 
-挂载: `~/.openclaw`, `workspace`。端口: 18789 (Gateway), 3000 (Web UI)。
+**挂载**（必选，否则重启丢失）:
+```yaml
+volumes:
+  - ~/.openclaw:/root/.openclaw
+  - ~/openclaw/workspace:/workspace
+```
+**端口**: 18789 (Gateway), 3000 (Web UI)
+
+**镜像变体**: OPENCLAW_VARIANT=slim（更小）、sandbox（沙箱）、sandbox-browser（含浏览器）
+
+**Podman**: `podman-compose up -d` 兼容。v2026.3.8 起自动处理 SELinux :Z。
+
+### 首次配置 Initial Configuration
+
+**Gateway 认证** (v2026.3.7+ 必设，否则无法启动):
+```yaml
+gateway:
+  auth:
+    mode: token   # 或 password
+    token: "your-secret-token"
+```
+
+**openclaw doctor**: 检查 Node 版本、依赖、Gateway、模型 API、守护进程、网络。
+
+**备份** (v2026.3.8+): `openclaw backup create`，改配置前建议执行。
+
+**版本更新**: `openclaw update --channel stable|beta|dev`
+
+### 远程访问 Remote Access
+
+**Tailscale Serve**（仅 Tailscale 网络）: `tailscale serve --bg https+insecure://127.0.0.1:18789`
+
+**Tailscale Funnel**（公网 webhook）: `tailscale funnel --bg https+insecure://127.0.0.1:18789`
+
+**SSH 端口转发**: `ssh -L 18789:127.0.0.1:18789 user@your-server`
 
 ---
 
 ## Channels 渠道
 
-### 平台列表（部分）
+### 平台列表
 
-| 渠道 | 类型 | 难度 |
+| 渠道 | 类型 | 耗时 |
 |------|------|------|
 | Telegram | 内置 | 5分钟 |
 | QQ | 插件 | 5分钟 |
@@ -98,13 +209,55 @@ docker-compose up -d
 | 钉钉 | 插件 | 20–30分钟 |
 | 企业微信 | 插件 | 20–30分钟 |
 
-### 新手推荐顺序
+### Telegram 接入
 
-Telegram/QQ → Discord/飞书 → WhatsApp/钉钉/企微
+1. 找 @BotFather 发 /newbot → 创建 Bot，获取 Token
+2. 写入 openclaw.yaml: `channels.telegram.enabled: true`, `botToken: "xxx"`, `dmPolicy: pairing`
+3. 重启 Gateway，给 bot 发消息，输入配对码
 
-### 国内统一插件
+### Discord 接入
 
-`openclaw-china`: 飞书、钉钉、QQ、企微、微信。`openclaw china setup` 交互式配置。
+1. discord.com/developers/applications 创建 Application
+2. Bot 页获取 Token，开启 Message Content Intent、Server Members Intent
+3. OAuth2 URL Generator 生成邀请链接，添加 bot
+4. 开启 Developer Mode，复制 Server ID、User ID 写入配置
+5. 私聊 bot 输入配对码（1小时有效）
+
+### WhatsApp 接入
+
+1. `openclaw onboard` 选 WhatsApp
+2. 终端显示 QR 码，手机扫码（设置→已连接设备→连接新设备）
+3. 配对完成即可对话
+注意：用 Node 不用 Bun；session 过期需重新扫码；建议独立号码
+
+### QQ 接入
+
+1. 手机 QQ 扫码完成开发者注册
+2. QQ 开放平台创建 Bot，获取 App ID、Token
+3. OpenClaw 配置绑定，即可在 QQ 对话
+支持：Markdown、图片、语音、文件；个人助手或群管理
+
+### 飞书接入
+
+1. open.feishu.cn 创建企业自建应用，获取 App ID、App Secret
+2. `openclaw onboard` 选 Feishu，粘贴凭证
+3. 重启 Gateway
+2026.2 起内置支持；WebSocket 事件订阅
+
+### 钉钉接入
+
+1. 钉钉开放平台创建应用，添加机器人
+2. 消息接收设为 **Stream 模式**（免公网）
+3. 安装 @soimy/dingtalk 或 dingtalk-openclaw-connector，配置后启动
+社区成熟，Stream 模式不需公网回调
+
+### 企业微信 / 微信
+
+企微：Agent 或 Bot 模式，插件如 dingxiang-me/OpenClaw-Wechat。微信个人号：企微中转 / iPad 协议 / 小程序，封号风险存在。
+
+### openclaw-china 统一插件
+
+飞书、钉钉、QQ、企微、微信一站式。`openclaw plugins install @openclaw-china/channels`，`openclaw china setup` 交互式配置。
 
 ---
 
