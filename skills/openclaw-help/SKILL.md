@@ -1,0 +1,164 @@
+---
+name: openclaw-help
+description: |
+  Answer OpenClaw usage questions by consulting the bundled reference (橙皮书 extracts) and official docs (docs.openclaw.ai). Aligns answers with official docs; falls back to web search when neither source suffices.
+  基于内置 reference（橙皮书摘要）与官方文档 docs.openclaw.ai 回答 OpenClaw 使用问题。回答与官方文档对齐；reference 与官方文档均无覆盖时触发全网搜索。
+triggers:
+  - OpenClaw
+  - 养虾
+  - openclaw help
+  - openclaw 问题
+  - openclaw 部署
+  - openclaw 接入
+---
+
+# openclaw-help Skill
+
+> **Language**: Respond in the same language as the user (中文提问则中文回答).
+
+Answer OpenClaw usage questions using the **bundled reference** (橙皮书 extracts) and **official docs** (docs.openclaw.ai). When the two conflict, **prefer official docs**. When neither suffices, trigger **WebSearch**.
+
+> Reference is derived from OpenClaw橙皮书 v1.2.0; for latest details, prefer [docs.openclaw.ai](https://docs.openclaw.ai).
+
+---
+
+## Knowledge Sources
+
+### 1. Embedded Reference (bundled)
+
+- **Path**: `reference.md` (sibling to SKILL.md in the openclaw-help skill directory)
+- **Content**: FAQ, Command Cheat Sheet, Resources, Architecture, Deployment, Channels, Skills, Model providers, Security
+- **Retrieval**: Grep `reference.md` → Read matching regions
+
+### 2. Official Docs (Remote)
+
+- **Base**: https://docs.openclaw.ai
+- **Getting Started**: https://docs.openclaw.ai/start/getting-started
+- **Doc Index**: https://docs.openclaw.ai/llms.txt (discover channels, cli, install pages)
+- **Retrieval**: WebFetch to fetch relevant pages
+
+### 3. Alignment Rule
+
+- **On conflict** (e.g., Node version, command syntax): **prefer official docs**
+- **Install / quick start / commands**: MUST reference official docs in the answer
+
+---
+
+## Execution Flow
+
+### Step 0 · Trigger Check
+
+Activate when user asks about OpenClaw usage: deployment, channel integration, configuration, errors, Skills, 养虾, etc.
+
+---
+
+### Step 1 · Retrieve from Reference
+
+1. Extract 2–5 keywords from the user question (e.g., 部署, Telegram, Skills, openclaw doctor, FAQ)
+2. **Grep** `reference.md` in the skill directory for those keywords
+3. **Read** matching regions with context (e.g., ±50 lines)
+4. If no hits or content insufficient → treat as "reference no cover"
+
+---
+
+### Step 2 · Retrieve from Official Docs
+
+Use **WebFetch** (or mcp_web_fetch) to fetch relevant docs pages:
+
+| Question Type | Fetch |
+|---------------|-------|
+| Install / quick start | https://docs.openclaw.ai/start/getting-started |
+| Channel (Telegram, Discord, etc.) | https://docs.openclaw.ai/channels/telegram.md (or corresponding channel) |
+| CLI command (doctor, gateway, etc.) | https://docs.openclaw.ai/cli/doctor.md (or corresponding cli page) |
+| General | Check https://docs.openclaw.ai/llms.txt for page URLs |
+
+If WebFetch fails → continue with reference or fallback; note network issue.
+
+---
+
+### Step 3 · Synthesize Answer
+
+| Found In | Action |
+|----------|--------|
+| Both reference and official docs | Synthesize from both; prefer official docs on version/command details |
+| Reference only | Answer from reference; add "建议同时查阅 [官方文档链接] 以确认最新版本" |
+| Official docs only | Answer from official docs |
+| Neither | Proceed to Step 4 (WebSearch fallback) |
+
+---
+
+### Step 4 · WebSearch Fallback
+
+When neither reference nor official docs has sufficient content:
+
+1. Invoke **WebSearch** with the user question (and OpenClaw-related refinements)
+2. Organize answer from search results
+3. Note: "Reference 与官方文档未覆盖，以下来自网络搜索"
+
+---
+
+## Reference Attribution
+
+- **From reference**: Cite section (e.g., "据 reference 渠道章节…")
+- **From official docs**: Include docs.openclaw.ai link (e.g., https://docs.openclaw.ai/start/getting-started)
+- **From web search**: Note "Reference 与官方文档未覆盖，以下来自网络搜索"
+
+---
+
+## Examples
+
+### Example A — Telegram 接入 (Chinese)
+
+**Input:** "OpenClaw 如何接入 Telegram？"
+
+**Actions:**
+1. Grep reference.md for "Telegram"
+2. WebFetch https://docs.openclaw.ai/channels/telegram.md
+3. Synthesize from both; prefer official docs on setup steps
+4. Cite reference Channels section and link to docs.openclaw.ai/channels/telegram
+
+### Example B — openclaw doctor (Chinese)
+
+**Input:** "openclaw doctor 是干什么的？"
+
+**Actions:**
+1. Grep reference.md for "doctor" or "诊断"
+2. WebFetch https://docs.openclaw.ai/cli/doctor.md
+3. Synthesize; prefer official docs on command flags
+
+### Example C — Quick start (官方文档为主)
+
+**Input:** "OpenClaw 快速开始怎么装？"
+
+**Actions:**
+1. WebFetch https://docs.openclaw.ai/start/getting-started (primary)
+2. Optional: Grep reference.md for "安装"
+3. Answer primarily from official docs; add reference background if relevant
+
+### Example D — ClawHub Skill 安全 (Reference FAQ)
+
+**Input:** "ClawHub Skill 安全吗？"
+
+**Actions:**
+1. Grep reference.md for "ClawHub" or "安全"
+2. WebFetch docs if relevant; reference FAQ Q9 likely sufficient
+3. Cite reference FAQ section
+
+### Example E — Fallback
+
+**Input:** Question not covered by reference or official docs
+
+**Actions:**
+1. WebSearch
+2. Organize answer; note "Reference 与官方文档未覆盖，以下来自网络搜索"
+
+---
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| WebFetch fails (network) | Proceed with reference; note "官方文档暂时不可达，建议稍后查阅 docs.openclaw.ai" |
+| Grep returns no hits in reference | Rely on official docs or WebSearch |
+| reference.md not found | Use official docs and WebSearch |
+| Conflict between sources | Prefer official docs |
