@@ -28,6 +28,7 @@ npx skills add https://github.com/wghust/stark-skills/tree/main/skills/copy-web
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/nextjs-debug
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/git-intelligence
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/interview-evaluation
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/network-status
 
 # Local path
 npx skills add ./stark-skills
@@ -47,6 +48,7 @@ cp -r stark-skills/skills/copy-web ~/.cursor/skills/
 cp -r stark-skills/skills/nextjs-debug ~/.cursor/skills/
 cp -r stark-skills/skills/git-intelligence ~/.cursor/skills/
 cp -r stark-skills/skills/interview-evaluation ~/.cursor/skills/
+cp -r stark-skills/skills/network-status ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -284,6 +286,29 @@ Generates structured interview summaries from conversation records. Parses dialo
 
 ---
 
+### network-status
+
+Diagnoses current network status: proxy, connectivity, speed, DNS, local interfaces, public IP, VPN. Zero dependencies, uses only built-in commands (ping, curl, ifconfig/ip, netstat/ss, etc.).
+
+**Use when:**
+- "网络状态" / "网速" / "代理" / "网络诊断"
+- "Network status" / "Proxy check" / "Network diagnostic"
+- Troubleshooting connectivity, proxy config, or speed issues
+
+**Features:**
+- **Proxy**: env vars (HTTP_PROXY, etc.) + macOS system proxy (networksetup, scutil)
+- **Connectivity**: ping + curl to google.com, github.com, cloudflare.com
+- **Speed**: ping RTT + curl rough download speed (with disclaimer for precise speedtest)
+- **DNS**: resolv.conf, scutil --dns, dig/nslookup timing
+- **Local**: ifconfig/ip addr, default route
+- **Public IP**: curl ipinfo.io
+- **VPN**: utun/ppp interface detection
+- **Output**: Structured Markdown report with per-module status
+
+**Languages:** Responds in the same language as the user (English / Chinese auto-detect).
+
+---
+
 ### insight-pdf
 
 Generates professional corporate/business report PDFs with advanced visualizations and modern design. Uses ECharts for rich charts (heatmaps, radar, gauge, sankey), infographic components (progress bars, timelines, comparison blocks), and enterprise-grade typography.
@@ -360,6 +385,13 @@ Interview evaluation: [paste conversation or path to interview-xxx.md]
 ```
 
 ```
+# network-status
+检查网络状态
+网速怎么样？代理配置对吗？
+Network status check / Proxy check
+```
+
+```
 # insight-pdf
 Generate a professional PDF report from this analysis data
 Create an enterprise report with charts showing Q4 revenue trends
@@ -378,6 +410,7 @@ Skills let agents perform specialized tasks like:
 - Diagnosing and fixing Next.js startup, compilation, and runtime errors
 - Analyzing git commit history, PR risk, and code change impact
 - Generating structured interview summaries from conversation records
+- Diagnosing network status (proxy, connectivity, speed, DNS, public IP)
 - Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports, release notes)
 
 ## Supported Agents
@@ -414,8 +447,10 @@ stark-skills/
 │   │   └── reference.md        # Error patterns, version matrix, code search templates
 │   ├── git-intelligence/
 │   │   └── SKILL.md            # CLI command mapping + trigger phrases
-│   └── interview-evaluation/
-│       └── SKILL.md            # Four-section interview summary from conversation
+│   ├── interview-evaluation/
+│   │   └── SKILL.md            # Four-section interview summary from conversation
+│   └── network-status/
+│       └── SKILL.md            # Network diagnosis: proxy, speed, DNS, connectivity
 ├── tools/
 │   └── git-intelligence/       # Runnable TypeScript CLI companion tool
 │       ├── src/                # cli.ts, git/, llm/, analysis/, utils/
