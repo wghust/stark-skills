@@ -27,6 +27,7 @@ npx skills add https://github.com/wghust/stark-skills/tree/main/skills/google-ne
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/copy-web
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/nextjs-debug
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/git-intelligence
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/interview-evaluation
 
 # Local path
 npx skills add ./stark-skills
@@ -45,6 +46,7 @@ cp -r stark-skills/skills/google-news-seo ~/.cursor/skills/
 cp -r stark-skills/skills/copy-web ~/.cursor/skills/
 cp -r stark-skills/skills/nextjs-debug ~/.cursor/skills/
 cp -r stark-skills/skills/git-intelligence ~/.cursor/skills/
+cp -r stark-skills/skills/interview-evaluation ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -255,6 +257,33 @@ AI-powered git repository analysis. Extracts structured insights from commits, P
 
 ---
 
+### interview-evaluation
+
+Generates structured interview summaries from conversation records. Parses dialogue heuristically into four sections: background & credentials, core project, engineering experience, and coding test.
+
+**Use when:**
+- "面试评价" / "面试总结" / "面试复盘"
+- "Interview evaluation"
+- Need a structured summary from an interview conversation for archival or cross-candidate comparison
+
+**Features:**
+- **Input**: Paste conversation text or provide file path (.txt / .md)
+- **Four-section output**: 1) 背景与履历 2) 核心项目 3) 工程经验 4) 编程题
+- **Heuristic extraction**: Infers blocks from keywords, turn-taking, and topic shifts
+- **Markdown format**: Numbered sections, concise and scannable
+
+**Output structure:**
+```
+1、某985硕+某211本，专业前X%保研。主要研究方向…，奖项…，AI 编码…
+2、核心项目这块，技术方案、方法论、架构熟悉度…
+3、工程方面，系统架构、规模指标、技术栈、工程痛点…
+4、编程题（题目）实现思路正确，X 分钟左右完成编码。
+```
+
+**Languages:** Responds in the same language as the user (English / Chinese auto-detect).
+
+---
+
 ### insight-pdf
 
 Generates professional corporate/business report PDFs with advanced visualizations and modern design. Uses ECharts for rich charts (heatmaps, radar, gauge, sankey), infographic components (progress bars, timelines, comparison blocks), and enterprise-grade typography.
@@ -324,6 +353,13 @@ Who should review this PR?
 ```
 
 ```
+# interview-evaluation
+面试评价：[粘贴面试对话]
+面试总结：帮我总结这份面试记录
+Interview evaluation: [paste conversation or path to interview-xxx.md]
+```
+
+```
 # insight-pdf
 Generate a professional PDF report from this analysis data
 Create an enterprise report with charts showing Q4 revenue trends
@@ -341,6 +377,7 @@ Skills let agents perform specialized tasks like:
 - Cloning and replicating websites as production-ready React projects
 - Diagnosing and fixing Next.js startup, compilation, and runtime errors
 - Analyzing git commit history, PR risk, and code change impact
+- Generating structured interview summaries from conversation records
 - Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports, release notes)
 
 ## Supported Agents
@@ -375,8 +412,10 @@ stark-skills/
 │   ├── nextjs-debug/
 │   │   ├── SKILL.md            # Execution flow + diagnostic report template
 │   │   └── reference.md        # Error patterns, version matrix, code search templates
-│   └── git-intelligence/
-│       └── SKILL.md            # CLI command mapping + trigger phrases
+│   ├── git-intelligence/
+│   │   └── SKILL.md            # CLI command mapping + trigger phrases
+│   └── interview-evaluation/
+│       └── SKILL.md            # Four-section interview summary from conversation
 ├── tools/
 │   └── git-intelligence/       # Runnable TypeScript CLI companion tool
 │       ├── src/                # cli.ts, git/, llm/, analysis/, utils/
