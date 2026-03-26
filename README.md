@@ -29,6 +29,7 @@ npx skills add https://github.com/wghust/stark-skills/tree/main/skills/nextjs-de
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/git-intelligence
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/interview-evaluation
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/network-status
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/chrome-tab-killer
 
 # Local path
 npx skills add ./stark-skills
@@ -49,6 +50,7 @@ cp -r stark-skills/skills/nextjs-debug ~/.cursor/skills/
 cp -r stark-skills/skills/git-intelligence ~/.cursor/skills/
 cp -r stark-skills/skills/interview-evaluation ~/.cursor/skills/
 cp -r stark-skills/skills/network-status ~/.cursor/skills/
+cp -r stark-skills/skills/chrome-tab-killer ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -309,6 +311,26 @@ Diagnoses current network status: proxy, connectivity, speed, DNS, local interfa
 
 ---
 
+### chrome-tab-killer
+
+Enumerates Chrome tabs, detects crash/error/duplicate candidates, and closes tabs **after confirmation**. Primary path: **Chrome DevTools Protocol** (`curl http://127.0.0.1:9222/json/list`); macOS fallback: bundled **AppleScript** in `scripts/`. Identification is automated (no manual `chrome://discards/` paste).
+
+**Use when:**
+- "chrome-tab-killer" / "清理 Chrome 标签" / "关闭崩溃标签"
+- Too many Chrome tabs, slow browser, duplicate tabs
+
+**Features:**
+- **CDP**: Remote debugging port for full tab metadata; optional `chrome://discards/` automation via CDP (best-effort, fallback on DOM change)
+- **Heuristics**: Crash titles (Aw, Snap!, ERR_, etc.), duplicate URLs
+- **Scripts**: `list-chrome-tabs.applescript`, `close-chrome-tab.applescript`, `close-tab-by-url.applescript`
+- **Safety**: Default dry-run; close only after user confirms the list
+
+**Prerequisites:** Google Chrome (macOS for AppleScript); `--remote-debugging-port=9222` for full CDP; Automation permission for controlling Chrome.
+
+**Languages:** Responds in the same language as the user (English / Chinese auto-detect).
+
+---
+
 ### insight-pdf
 
 Generates professional corporate/business report PDFs with advanced visualizations and modern design. Uses ECharts for rich charts (heatmaps, radar, gauge, sankey), infographic components (progress bars, timelines, comparison blocks), and enterprise-grade typography.
@@ -392,6 +414,12 @@ Network status check / Proxy check
 ```
 
 ```
+# chrome-tab-killer
+分析一下 Chrome 标签 / 清理重复标签
+chrome-tab-killer: list tabs and suggest closing crash pages
+```
+
+```
 # insight-pdf
 Generate a professional PDF report from this analysis data
 Create an enterprise report with charts showing Q4 revenue trends
@@ -411,6 +439,7 @@ Skills let agents perform specialized tasks like:
 - Analyzing git commit history, PR risk, and code change impact
 - Generating structured interview summaries from conversation records
 - Diagnosing network status (proxy, connectivity, speed, DNS, public IP)
+- Managing Chrome tab overload (CDP + AppleScript, crash/duplicate detection)
 - Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports, release notes)
 
 ## Supported Agents
@@ -449,8 +478,11 @@ stark-skills/
 │   │   └── SKILL.md            # CLI command mapping + trigger phrases
 │   ├── interview-evaluation/
 │   │   └── SKILL.md            # Four-section interview summary from conversation
-│   └── network-status/
-│       └── SKILL.md            # Network diagnosis: proxy, speed, DNS, connectivity
+│   ├── network-status/
+│   │   └── SKILL.md            # Network diagnosis: proxy, speed, DNS, connectivity
+│   └── chrome-tab-killer/
+│       ├── SKILL.md            # Chrome tab enum + CDP / AppleScript
+│       └── scripts/            # list/close AppleScripts (macOS)
 ├── tools/
 │   └── git-intelligence/       # Runnable TypeScript CLI companion tool
 │       ├── src/                # cli.ts, git/, llm/, analysis/, utils/
