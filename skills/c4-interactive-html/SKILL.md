@@ -156,9 +156,11 @@ const L1 = {
 
 ## Step 3 · Output path
 
-1. **Default**: save as **`~/Downloads/c4-architecture.html`** (user home → `Downloads` → filename `c4-architecture.html`).
-2. **If not writable** (permissions, sandbox, missing folder): ask the user for a path **or** write **`c4-architecture.html`** at the **workspace root** and **explain the fallback** in the reply.
-3. Confirm the **absolute path** in the assistant message after writing.
+1. **Default**: save as **`<workspace-root>/c4-architecture.html`** — the **current conversation project directory** (Cursor: the workspace folder for a single-folder workspace; Claude Code / other hosts: the project `cwd` used for analysis). Filename stays `c4-architecture.html`.
+2. **User override (same turn)**: if the user asks for a path under the project (e.g. `docs/c4-architecture.html`), honor it relative to the chosen workspace root unless they give an absolute path; create parent directories when safe.
+3. **Multi-root workspace**: if several folders are open and the user did not specify a project, use the root that was the **focus of architecture analysis**, or **ask** which root to use before writing.
+4. **Unknown root or not writable**: **do not** silently fall back to `~/Downloads` or elsewhere. **Ask** the user for an explicit directory or full file path and **state the reason** (e.g. permission, ambiguous root).
+5. After writing, confirm the **absolute path** in the assistant message.
 
 ---
 
@@ -168,7 +170,7 @@ const L1 = {
 - [ ] Breadcrumb, legend, L1/L2/L3 behavior, panel, ESC close, selection highlight—all present.
 - [ ] Core system-only drill on L1; single L3 target; dimmed nodes behave as specified.
 - [ ] Chinese labels render correctly (`<meta charset="utf-8">` + fonts).
-- [ ] File written to default or agreed path.
+- [ ] File written to **workspace root** default (`c4-architecture.html`) or user-agreed path; absolute path confirmed in reply.
 
 ---
 

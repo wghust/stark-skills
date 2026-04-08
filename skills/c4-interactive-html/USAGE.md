@@ -2,7 +2,7 @@
 
 ## Changing the output path
 
-The skill defaults to `~/Downloads/c4-architecture.html`. In the same turn you can ask for a different absolute path or a path under the repo (e.g. `docs/c4-architecture.html`). If `Downloads` is not writable, the agent may fall back to the workspace root—check the assistant’s confirmation message.
+The skill defaults to **`<workspace-root>/c4-architecture.html`** (the opened project / workspace folder). In the same turn you can ask for another path under the repo (e.g. `docs/c4-architecture.html`) or an absolute path. If the workspace root is unclear or not writable, the agent should ask you where to save—there is **no** automatic fallback to `~/Downloads`.
 
 ## No Docker / single-process projects
 
@@ -15,3 +15,7 @@ If you need fully offline behavior, ask the agent to **omit** the Google Fonts `
 ## Updating the diagram later
 
 Regenerate the HTML after major structural changes, or edit the embedded `L1` / `L2` / `L3` JavaScript objects in the file—no separate data file is required by the skill.
+
+## Git
+
+Teams may commit `c4-architecture.html` or add it to `.gitignore`—the skill does not change `.gitignore` for you.
