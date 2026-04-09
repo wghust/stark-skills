@@ -25,9 +25,13 @@ This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, e
 
 `stark-skills` is a skills workspace for AI coding agents. It contains Cursor Skills—packaged instructions that extend agent capabilities. This repo has no traditional app code; it is a meta/skills repo built on Markdown and the Cursor Skills format.
 
-## openspec-design Skill
+## Skills in this repo
 
-The only skill in this repo is `skills/openspec-design/`. It adds design asset integration: when the user's prompt includes Figma links or images, the agent fetches design data via Figma MCP, saves assets to a `design/` directory, and generates a design summary document.
+This workspace ships multiple Cursor Skills under `skills/`. Two primary examples:
+
+### openspec-design (`skills/openspec-design/`)
+
+Adds design asset integration: when the user's prompt includes Figma links or images, the agent fetches design data via Figma MCP, saves assets to a `design/` directory, and generates a design summary document.
 
 ### When to Use
 
@@ -60,3 +64,7 @@ skills/openspec-design/
 ### Reference
 
 For full execution details, tool names, and insertion fragments, read `skills/openspec-design/SKILL.md`.
+
+### confluence-distill (`skills/confluence-distill/`)
+
+Read-only Confluence search and distillation into a **new multi-file Agent Skill** (`SKILL.md` + `references/` + optional `scripts/`). Supports direct REST (base URL + API token) or optional Membrane CLI (`connectionId`). Use when the user wants Confluence 蒸馏, topic search, or generating a skill from wiki/runbook content. See `skills/confluence-distill/SKILL.md` and `USAGE.md`.
