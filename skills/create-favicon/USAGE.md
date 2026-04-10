@@ -17,6 +17,25 @@
 
 实现上依赖 `tools/create-favicon` 使用的 `sharp`：常见 **PNG、JPEG、WebP、GIF、SVG** 等通常可读。若某格式解码失败，向用户说明并建议转为 PNG/SVG 再试。
 
+## 构图：contain（默认）与 cover（须用户明确要求）
+
+| 模式 | 行为 | 适用 |
+|------|------|------|
+| **`contain`（默认）** | 整图等比缩放进方形，**不裁切**内容；非 1:1 时有留白 | 用户希望 favicon **还是那张 logo**，不丢边缘 |
+| **`cover`** | 铺满方形，**多出的部分裁掉**（常为中心裁切） | 用户**明确**要填满、不要留白、可接受裁边 |
+
+旧版默认若使用 `cover`，横向/纵向 logo 易被裁成「变样」；当前 CLI **默认 `contain`**。**透明留白**需源图带 alpha（如 PNG/SVG）；**JPEG** 无透明通道时，默认可用 **白色** 留白（见 CLI 说明）。需要透明边时请使用 PNG/SVG 源图。
+
+调用示例：`node dist/cli.js -i ... -o ...`（默认 contain）；仅当用户明确要求铺满时再 `--fit cover`。
+
+## 何谓「污染」用户项目
+
+**污染**指在用户的**业务应用仓库**里为跑本 CLI 而留下与站点无关的工程痕迹，例如：在应用根目录执行 `pnpm install` 仅为构建 favicon 工具、产生 **`node_modules`**、为本工具生成持久 **`dist/`**、把整套 **`tools/create-favicon`** 拷进用户仓库（**用户未要求 vendoring 时**）、或仅为本工具在应用根新增 **`package.json` / `pnpm-lock.yaml`**。
+
+**不属污染、且应当发生**：在用户确认的路径写入 **`favicon.ico`**（如 `public/favicon.ico`）。**临时文件**应放在**系统临时目录**，用毕删除。
+
+**推荐做法**（与 `SKILL.md` Step 2 一致）：在 **stark-skills（或含本工具的 monorepo）检出目录**的 `tools/create-favicon` 下构建；或在 **`$TMPDIR`** 等临时目录 disposable clone/复制后构建；**`--output`** 仍指向用户应用内的绝对路径。用户**明确要求**把 CLI 纳入其仓库时，可在该 vendored 路径下安装构建，并提示 `.gitignore` / CI 影响。
+
 ## 输出
 
 - 默认文件名 **`favicon.ico`**。
@@ -36,14 +55,18 @@ IANA 类型为 `image/vnd.microsoft.icon`；部分服务器仍配置 `image/x-ic
 
 ## CLI 示例
 
-在仓库根目录：
+在 **本 monorepo（stark-skills）检出** 下的工具目录执行安装与构建（**不要**在用户自己的站点项目根里仅为 favicon 执行下列步骤）：
 
 ```bash
-cd tools/create-favicon
+cd /absolute/path/to/stark-skills/tools/create-favicon
 pnpm install
 pnpm build
-node dist/cli.js --input /path/to/source.png --output /path/to/favicon.ico
+node dist/cli.js --input /absolute/path/to/source.png --output /absolute/path/to/user-app/public/favicon.ico
+# 用户明确要求铺满、可裁边时：
+# node dist/cli.js --input ... --output ... --fit cover
 ```
+
+若当前仅有用户站点仓库，可将 `tools/create-favicon` **复制或浅克隆**到临时目录后在**临时目录**内 `pnpm install && pnpm build`，再用绝对路径调用 `node dist/cli.js`，`--output` 指向站点内目标文件。
 
 ## 故障排查
 

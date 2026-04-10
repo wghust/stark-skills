@@ -5,6 +5,7 @@
 ## 约定
 
 - **只写** `--output` 指定的文件；不修改用户项目的其他文件。
+- **Install / build 位置**：请在 **本 monorepo（stark-skills）检出** 下的本目录，或 **系统临时目录** 内的 disposable 拷贝中执行 `pnpm install` / `pnpm build`。**不要**在用户无关的**业务应用项目根**默认执行上述步骤，以免产生 `node_modules` 等污染；详见 `skills/create-favicon/SKILL.md` 与 `USAGE.md`。
 - 运行信息（成功/错误）打在 **stderr**；**stdout** 保持空闲，便于将来扩展管道用法。
 
 ## 要求
@@ -16,12 +17,19 @@
 
 ## 构建与运行
 
+在 **stark-skills 仓库**（或任意已包含本目录的检出）中使用绝对路径示例：
+
 ```bash
-cd tools/create-favicon
+cd /absolute/path/to/stark-skills/tools/create-favicon
 pnpm install
 pnpm build
-node dist/cli.js --input /path/to/logo.png --output /path/to/favicon.ico
+node dist/cli.js --input /absolute/path/to/logo.png --output /absolute/path/to/target/favicon.ico
+
+# 默认 --fit contain（整图可见；非方形时透明或白边）。仅当需要铺满并可接受裁边：
+node dist/cli.js --input /absolute/path/to/logo.png --output /absolute/path/to/target/favicon.ico --fit cover
 ```
+
+若你在**仅含站点代码**的工作区，请把本目录复制到 **`$TMPDIR`**（或 Windows `%TEMP%`）下再在**该临时路径**内执行 `pnpm install` / `pnpm build`，`--output` 指向站点项目内的 `favicon.ico`。
 
 全局链接（可选）：
 

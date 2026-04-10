@@ -40,22 +40,43 @@ Treat the source as **present** only if **至少一项**成立：
 
 ---
 
-## Step 2 · Generate ICO（优先使用本仓库 CLI）
+## Step 2 · Generate ICO（不污染用户业务项目）
 
-**Preferred path** — when `tools/create-favicon/` exists and dependencies are installable:
+**Goal**: only write the user-approved **`favicon.ico`** into their **application** tree (e.g. `public/favicon.ico`). **Do not** run `pnpm install` / `pnpm build` for this CLI in an **unrelated** app repo root, and **do not** add `node_modules`, CLI `dist/`, or a copied `tools/create-favicon` tree there **unless the user explicitly asks to vendor the tool** (then warn about gitignore / lockfiles).
 
-1. `cd tools/create-favicon && pnpm install && pnpm build`
-2. Run:
+Pick **one** path **in order**:
+
+1. **This skills monorepo checkout** — If the workspace is (or you can resolve) the repo that already contains `tools/create-favicon/package.json` (e.g. **`stark-skills`**):  
+   `cd <absolute-path-to>/tools/create-favicon && pnpm install && pnpm build`  
+   then run **`node`** with **absolute** `--input` and `--output` (output may point into the user’s app directory).
+
+2. **Disposable build in OS temp** — If the user’s open project is **only** their site/app and does **not** ship this CLI: clone or copy **only** `tools/create-favicon` (and needed files) under **`$TMPDIR`** / `%TEMP%` / `mktemp -d`, run `pnpm install && pnpm build` **there**, then:  
+   `node dist/cli.js --input "<absolute source image>" --output "<absolute path in user app>/favicon.ico"`  
+   Remove the temp tree when done (keep the ICO).
+
+3. **Published runner (if documented)** — If this CLI is published as an **`npx <package>`** or global binary in project docs, prefer it so the user’s app directory does not gain a local `node_modules` for this workflow.
+
+4. **Non-Node fallback** — **ImageMagick** / **`magick`** or another approach that satisfies **ICO + three PNG payloads** without leaving Node build artifacts in the user’s app; see `USAGE.md`.
 
 ```bash
-node dist/cli.js --input "<absolute-or-workspace-path-to-source>" --output "<absolute-or-workspace-path-to-favicon.ico>"
+# Example after building CLI in monorepo or temp dir — always use absolute paths.
+# Default: --fit contain（整图可见，非方形时透明或白边，不默认裁切）
+node dist/cli.js --input "<absolute-path-to-source.png>" --output "<absolute-path-to-user-app>/public/favicon.ico"
+
+# Only if the user explicitly wants 铺满/裁剪去留白（需确认可能裁掉边缘）:
+node dist/cli.js --input "..." --output "..." --fit cover
 ```
+
+**Framing（构图）**
+
+- **默认 `contain`**：等比缩放，**整张源图都保留在方形内**，居中；有 alpha 的源图留白为**透明**；无 alpha（如 JPEG）留白为**白色**（要透明边请用 PNG/SVG）。**禁止**在用户未要求时用 `cover` 把图裁成「另一张」。
+- **`--fit cover`**：**仅当**用户明确说不要留白、要填满、裁剪铺满等，并**提示可能裁边**后，再传入 CLI 或等效流程。
 
 The CLI writes a single `favicon.ico` containing **three** embedded **PNG** blobs at **32×32**, **48×48**, and **180×180** (ICO container per Windows icon layout; see references).
 
-**Fallback** — if the tool is missing or `sharp` cannot run in the environment:
+**Fallback** — if every CLI path fails:
 
-- Use another method that still satisfies the **ICO + three PNG payloads** requirement (e.g. document ImageMagick/`magick` steps in `USAGE.md` patterns), or stop and explain what is missing.
+- Use step **4** or stop and explain what is missing (network for clone, Node, `sharp`, or ImageMagick).
 
 ---
 
@@ -68,4 +89,4 @@ The CLI writes a single `favicon.ico` containing **three** embedded **PNG** blob
 
 ## Step 4 · Tell the user
 
-- Output path, the three embedded sizes, and a short HTML hint (`<link rel="icon" href="/favicon.ico" …>`). Mention that **iOS 主屏幕** 常用独立 `apple-touch-icon.png`；详见 `references/ico-format-and-browser-notes.md`。
+- Output path, the three embedded sizes, **framing used**（`contain` = 整图可见 / `cover` = 可能裁边），and a short HTML hint (`<link rel="icon" href="/favicon.ico" …>`). If `cover` was used, **do not** imply the icon is pixel-identical to the uncropped source. Mention that **iOS 主屏幕** 常用独立 `apple-touch-icon.png`；详见 `references/ico-format-and-browser-notes.md`。
