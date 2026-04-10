@@ -68,3 +68,7 @@ For full execution details, tool names, and insertion fragments, read `skills/op
 ### confluence-distill (`skills/confluence-distill/`)
 
 Read-only Confluence search and distillation into a **new multi-file Agent Skill** (`SKILL.md` + `references/` + optional `scripts/`). Supports direct REST (base URL + API token) or optional Membrane CLI (`connectionId`). Use when the user wants Confluence 蒸馏, topic search, or generating a skill from wiki/runbook content. See `skills/confluence-distill/SKILL.md` and `USAGE.md`.
+
+### create-favicon (`skills/create-favicon/`)
+
+Build **`favicon.ico`** from a **user-supplied** image: ICO container with embedded **PNG** at **32×32**, **48×48**, and **180×180**. **Without** an attached image or explicit source path, the agent must **stop** and ask the user to upload/specify one. Companion CLI: `tools/create-favicon/` (`pnpm install && pnpm build`, then `node dist/cli.js --input … --output …`). See `skills/create-favicon/SKILL.md` and `USAGE.md`.
