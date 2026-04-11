@@ -72,6 +72,11 @@ node dist/cli.js --input "..." --output "..." --fit cover
 - **默认 `contain`**：等比缩放，**整张源图都保留在方形内**，居中；有 alpha 的源图留白为**透明**；无 alpha（如 JPEG）留白为**白色**（要透明边请用 PNG/SVG）。**禁止**在用户未要求时用 `cover` 把图裁成「另一张」。
 - **`--fit cover`**：**仅当**用户明确说不要留白、要填满、裁剪铺满等，并**提示可能裁边**后，再传入 CLI 或等效流程。
 
+**Multi-size / scaling（多尺寸与画质）**
+
+- **32 / 48 / 180** 共用 **同一套** `fit`、居中、留白规则；只是像素变多/变少，**不要**让某一档单独换裁切方式。
+- 参考 CLI 使用 **Lanczos（lanczos3）** 缩放；若 stderr 出现 **过小位图源** 警告，提醒用户换 **更高分辨率** 或 **SVG**。
+
 The CLI writes a single `favicon.ico` containing **three** embedded **PNG** blobs at **32×32**, **48×48**, and **180×180** (ICO container per Windows icon layout; see references).
 
 **Fallback** — if every CLI path fails:
@@ -89,4 +94,4 @@ The CLI writes a single `favicon.ico` containing **three** embedded **PNG** blob
 
 ## Step 4 · Tell the user
 
-- Output path, the three embedded sizes, **framing used**（`contain` = 整图可见 / `cover` = 可能裁边），and a short HTML hint (`<link rel="icon" href="/favicon.ico" …>`). If `cover` was used, **do not** imply the icon is pixel-identical to the uncropped source. Mention that **iOS 主屏幕** 常用独立 `apple-touch-icon.png`；详见 `references/ico-format-and-browser-notes.md`。
+- Output path, the three embedded sizes, **framing used**（`contain` = 整图可见 / `cover` = 可能裁边）, **that all three sizes share the same composition**（仅分辨率不同）, and **high-quality (Lanczos) resize** unless another tool path was used. If `cover` was used, **do not** imply the icon is pixel-identical to the uncropped source. If a small-source warning appeared, relay it. Mention that **iOS 主屏幕** 常用独立 `apple-touch-icon.png`；详见 `references/ico-format-and-browser-notes.md`。

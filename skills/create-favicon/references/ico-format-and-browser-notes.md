@@ -46,6 +46,8 @@ Favicon 的每一档都是 **正方形**像素。源图若不是 1:1，必须把
 | 48×48  | 部分系统 UI、较大列表 |
 | 180×180 | 常与 **Apple Touch Icon** 同尺寸；此处按需求 **嵌入 ICO**，便于单文件多分辨率 |
 
+三档为 **同一构图** 的不同像素密度；CLI 使用 **Lanczos** 高质量缩放。详见 `USAGE.md`。
+
 ## Apple Touch Icon 与 `favicon.ico` 的关系
 
 - 许多站点会额外提供 **`/apple-touch-icon.png`（180×180）** 供 iOS 主屏幕等场景。  

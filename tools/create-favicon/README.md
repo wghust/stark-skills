@@ -1,6 +1,6 @@
 # create-favicon
 
-从单张源图生成 **`favicon.ico`**：在 ICO 容器内嵌入三幅 **PNG**（**32×32、48×48、180×180**），符合 Windows ICO + Vista 起 PNG payload 的常见实现方式。
+从单张源图生成 **`favicon.ico`**：在 ICO 容器内嵌入三幅 **PNG**（**32×32、48×48、180×180**），符合 Windows ICO + Vista 起 PNG payload 的常见实现方式。三档为 **同一构图** 的多分辨率；缩放使用 **Lanczos（lanczos3）** 高质量内核。若源位图宽或高 **小于 32px**，会在 **stderr** 提示可能发糊，建议更大图或 SVG。
 
 ## 约定
 
