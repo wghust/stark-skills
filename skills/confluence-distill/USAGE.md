@@ -4,6 +4,13 @@
 
 在对话里让代理**只读**搜索你的 Confluence，把某主题（如告警、发布流程）的多篇页面**蒸馏**成一个新的 **Agent Skill 目录**：根 `SKILL.md` + `references/`（+ 可选 `scripts/`），符合 [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) 的常见结构。
 
+蒸馏产物是 **策展后的规范与流程**（`references/` 正文），不是 Confluence 整页粘贴：与主题无关的长列表会省略或放入带警告的 **Appendix**；多页冲突会出现在 **「多源差异与待确认」**（或同名英文小节）中，并链回 `source-map.md` 里的原文链接。Wiki 可能过时或写错，关键步骤请在 Confluence 中复核。
+
+## 如何描述主题边界（建议）
+
+- 用**一句话**说明下游 Skill 要解决什么问题（例如「手机主站 Git 分支从开发到发布的命名与合并顺序」）。
+- 可选：列出 **in scope** / **out of scope**（例如「不要收录各版本 JIRA 工作量表」），减少无关内容进入正文。
+
 ## 两种连网方式（二选一）
 
 ### 直连 REST

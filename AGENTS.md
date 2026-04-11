@@ -67,7 +67,11 @@ For full execution details, tool names, and insertion fragments, read `skills/op
 
 ### confluence-distill (`skills/confluence-distill/`)
 
-Read-only Confluence search and distillation into a **new multi-file Agent Skill** (`SKILL.md` + `references/` + optional `scripts/`). Supports direct REST (base URL + API token) or optional Membrane CLI (`connectionId`). Use when the user wants Confluence 蒸馏, topic search, or generating a skill from wiki/runbook content. See `skills/confluence-distill/SKILL.md` and `USAGE.md`.
+Read-only Confluence search and **curated** distillation into a **new multi-file Agent Skill** (`SKILL.md` + `references/` + optional `scripts/`): topic-aligned synthesis, conflict surfacing, macro/noise handling—not raw page dumps. Supports direct REST (base URL + API token) or optional Membrane CLI (`connectionId`). Use when the user wants Confluence 蒸馏, topic search, or generating a skill from wiki/runbook content. See `skills/confluence-distill/SKILL.md` and `USAGE.md`.
+
+### code-branch-management (`skills/code-branch-management/`)
+
+Distilled **Git/GitLab branch management** notes from Hexin Confluence (`cf.myhexin.com`), including mobile main station flow, multi-space specs, GitLab version/branch (qsrv), and cautions. Read `references/source-map.md` + `overview.md` before advising. See `skills/code-branch-management/SKILL.md` and `USAGE.md`.
 
 ### create-favicon (`skills/create-favicon/`)
 

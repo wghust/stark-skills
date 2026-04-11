@@ -2,7 +2,7 @@
 name: confluence-distill
 description: |
   Read-only Confluence search and distillation into a new multi-file Agent Skill package (SKILL.md + references/ + optional scripts/). Use when the user wants to search Confluence by topic (e.g. alerts, runbooks), distill pages into a new skill, generate a skill from wiki docs, Confluence 蒸馏, 从 Confluence 生成 skill, CQL 搜索 Confluence, 告警文档转 skill, Membrane Confluence 只读拉取.
-  从 Confluence 只读检索主题页面，蒸馏为多文件 Cursor/Claude Skill 包；支持直连（基址 + API Token）或 Membrane CLI（connectionId）二选一。禁止在蒸馏流程中创建/编辑/删除 Confluence 内容。
+  从 Confluence 只读检索主题页面，**策展式**蒸馏为多文件 Cursor/Claude Skill 包（非整页粘贴）；支持直连（基址 + API Token）或 Membrane CLI（connectionId）二选一。禁止在蒸馏流程中创建/编辑/删除 Confluence 内容。
 ---
 
 # confluence-distill
@@ -56,7 +56,7 @@ When this skill applies, the agent **MUST** follow the workflow below: establish
 
 ## Step 2 · Search (CQL first)
 
-1. Agree with the user on **topic**, optional **space** (`space=KEY`), and **max pages** (cap early; respect rate limits).
+1. Agree with the user on **topic** and **distillation goal** in one short sentence (what the downstream skill must help with). Optional: **in scope** / **out of scope** bullets if the topic is broad. Also agree **space** (`space=KEY`) if needed and **max pages** (cap early; respect rate limits).
 2. Build **CQL** (adapt to instance capabilities), e.g. `type=page AND text ~ "alert"` or title contains keywords. Use `/content/search` (or the versioned search endpoint your base URL supports).
 3. **Paginate** (`limit`, `start` / links in response) until the cap or no more results.
 
@@ -73,7 +73,37 @@ For each hit (bounded list):
 
 ---
 
-## Step 4 · Distill into a new Agent Skill **package**
+## Step 4 · Curate, then write the Agent Skill **package**
+
+Retrieved page bodies are **source material only**. **Do not** ship a skill whose `references/*.md` are mostly unedited full-page dumps, macro token garbage, or off-topic bulk lists (e.g. unrelated JIRA/feature inventories) as the canonical “how-to” unless the user explicitly asked for that inventory.
+
+### 4.1 · Intent alignment and triage (MANDATORY)
+
+- Map each fetched page to the user’s **distillation goal**; mark paragraphs as **on-topic**, **off-topic**, or **unclear**.
+- **Off-topic** bulk blocks MUST NOT form the main body of `references/<topic>.md`. Omit them with a one-line reason tied to the goal, or move to `## Appendix: …` with a warning that the section is **not normative** (traceability stays in `source-map.md`).
+
+### 4.2 · De-noise and macro repair (MANDATORY)
+
+- Remove or rewrite **macro debris** and meaningless token runs (e.g. parameter fragments between sentences); never treat them as procedural steps.
+- When tables collapse on export, rebuild as readable markdown **only** when meaning is clear; otherwise state “see Confluence UI” and link via `source-map.md`.
+
+### 4.3 · Multi-source reconciliation (MANDATORY)
+
+- If two or more pages **disagree** on a material point, add a dedicated section (e.g. **Conflicts / needs confirmation** / 多源差异与待确认) listing each variant with **space/page identity** and URLs from the source map. **Do not** silently pick one as company-wide truth.
+- If recency or correctness cannot be determined, say so and recommend verifying in Confluence.
+
+### 4.4 · Quality gate before writing files (MANDATORY)
+
+Before saving `references/*.md`, confirm:
+
+1. **Topic fit** — canonical sections directly support the stated goal.
+2. **Traceability** — non-obvious claims in canonical sections map to `source-map.md`.
+3. **Noise control** — no macro garbage in canonical flow; off-topic bulk demoted or appendix-only.
+4. **Conflicts** — material disagreements recorded.
+
+If the corpus is empty, irrelevant, or unusably corrupted after triage, **do not** invent procedures — report the gap and suggest narrower CQL, spaces, or follow-up pages (same spirit as “insufficient content”).
+
+### 4.5 · Package layout
 
 **MUST** write a **new directory** (default under the user’s workspace): `skills/<slug>/` or a path the user specifies. Minimum layout:
 
@@ -81,8 +111,8 @@ For each hit (bounded list):
 |------|---------|
 | `SKILL.md` | YAML `name` + `description` (“Use when” style triggers); **short** body: when to use, step order, **explicit list of `references/*.md` to read first** for facts/procedures. **No** huge tables or full runbooks here. |
 | `references/source-map.md` | Table: title, page id, space, canonical Confluence URL, fetch date / notes. |
-| `references/overview.md` | Domain summary, terminology, boundaries. |
-| `references/<topic>.md` | One or more topic files (e.g. `alerts-routing.md`) with procedures, checklists, tables. |
+| `references/overview.md` | Domain summary, terminology, boundaries; **include** guidance when multiple spaces/policies apply (agent should ask user which applies). |
+| `references/<topic>.md` | Curated procedures, rules, checklists, tables; optional **Conflicts / needs confirmation**; optional **Appendix** for low-signal or auxiliary dumps. |
 
 **Optional**
 
@@ -92,7 +122,7 @@ For each hit (bounded list):
 **Rules**
 
 - **Shard** long content across `references/`; keep root `SKILL.md` a **router**.
-- Every non-trivial claim in `references/` should be traceable via `source-map.md`.
+- Every non-trivial claim in canonical sections should be traceable via `source-map.md`.
 - **Do not** fabricate Confluence content when search returns nothing; suggest broader CQL or spaces.
 
 ---

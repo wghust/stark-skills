@@ -28,6 +28,7 @@ npx skills add https://github.com/wghust/stark-skills/tree/main/skills/copy-web
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/nextjs-debug
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/git-intelligence
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/interview-evaluation
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/skill-evaluation
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/network-status
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/chrome-tab-killer
 
@@ -49,6 +50,7 @@ cp -r stark-skills/skills/copy-web ~/.cursor/skills/
 cp -r stark-skills/skills/nextjs-debug ~/.cursor/skills/
 cp -r stark-skills/skills/git-intelligence ~/.cursor/skills/
 cp -r stark-skills/skills/interview-evaluation ~/.cursor/skills/
+cp -r stark-skills/skills/skill-evaluation ~/.cursor/skills/
 cp -r stark-skills/skills/network-status ~/.cursor/skills/
 cp -r stark-skills/skills/chrome-tab-killer ~/.cursor/skills/
 ```
@@ -288,6 +290,30 @@ Generates structured interview summaries from conversation records. Parses dialo
 
 ---
 
+### skill-evaluation
+
+Evaluates another skill from multiple dimensions and outputs a structured scorecard with risks, blockers, and prioritized fixes. Supports baseline audits, release-gate checks, and regression comparisons.
+
+**Use when:**
+- "评测这个 skill 是否合理并且有效执行"
+- "Skill quality review" / "Run skill baseline audit"
+- "Compare this skill quality before and after update"
+- Need objective PASS / CONDITIONAL PASS / FAIL guidance with evidence
+
+**Features:**
+- **6-dimension core scoring**: task completion, procedure/tool correctness, robustness/consistency, safety/policy, efficiency, usability/maintainability
+- **Reliability protocol**: repeated-run checks, perturbation tests, failure-path checks
+- **Platform trust overlay** (optional): skills.sh install signal, source reputation, GitHub stars, security audits, spec conformance
+- **Calibration support**: evidence-strength rules, conformance checklist, baseline index for high-priority skills
+- **Standardized report outputs**: score matrix, blocker severity, release recommendation, P0/P1/P2 fixes
+
+**References:**
+- Report template: [skills/skill-evaluation/references/report-template.md](skills/skill-evaluation/references/report-template.md)
+- Baseline index: [skills/skill-evaluation/references/baseline-index.md](skills/skill-evaluation/references/baseline-index.md)
+- Usage guide: [skills/skill-evaluation/USAGE.md](skills/skill-evaluation/USAGE.md)
+
+---
+
 ### network-status
 
 Diagnoses current network status: proxy, connectivity, speed, DNS, local interfaces, public IP, VPN. Zero dependencies, uses only built-in commands (ping, curl, ifconfig/ip, netstat/ss, etc.).
@@ -407,6 +433,13 @@ Interview evaluation: [paste conversation or path to interview-xxx.md]
 ```
 
 ```
+# skill-evaluation
+请评测 skills/confluence-distill，目标是发版门禁，范围 deep
+Run skill quality review for skills/openspec-design with regression scope
+给我一份该 skill 的 baseline 报告和改进优先级
+```
+
+```
 # network-status
 检查网络状态
 网速怎么样？代理配置对吗？
@@ -438,6 +471,7 @@ Skills let agents perform specialized tasks like:
 - Diagnosing and fixing Next.js startup, compilation, and runtime errors
 - Analyzing git commit history, PR risk, and code change impact
 - Generating structured interview summaries from conversation records
+- Evaluating skill quality with baseline reports and release-gate recommendations
 - Diagnosing network status (proxy, connectivity, speed, DNS, public IP)
 - Managing Chrome tab overload (CDP + AppleScript, crash/duplicate detection)
 - Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports, release notes)
@@ -478,6 +512,10 @@ stark-skills/
 │   │   └── SKILL.md            # CLI command mapping + trigger phrases
 │   ├── interview-evaluation/
 │   │   └── SKILL.md            # Four-section interview summary from conversation
+│   ├── skill-evaluation/
+│   │   ├── SKILL.md            # Multi-dimensional skill scoring and release recommendation
+│   │   ├── USAGE.md            # Scoring rules, trust overlay, and calibration guide
+│   │   └── references/         # Report templates, baseline reports, calibration docs
 │   ├── network-status/
 │   │   └── SKILL.md            # Network diagnosis: proxy, speed, DNS, connectivity
 │   └── chrome-tab-killer/
