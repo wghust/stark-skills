@@ -56,9 +56,31 @@ When this skill applies, the agent **MUST** follow the workflow below: establish
 
 ## Step 2 · Search (CQL first)
 
-1. Agree with the user on **topic** and **distillation goal** in one short sentence (what the downstream skill must help with). Optional: **in scope** / **out of scope** bullets if the topic is broad. Also agree **space** (`space=KEY`) if needed and **max pages** (cap early; respect rate limits).
-2. Build **CQL** (adapt to instance capabilities), e.g. `type=page AND text ~ "alert"` or title contains keywords. Use `/content/search` (or the versioned search endpoint your base URL supports).
-3. **Paginate** (`limit`, `start` / links in response) until the cap or no more results.
+### 2.0 · Scope gate (MANDATORY, hard stop)
+
+Before running any search/fetch command, the agent and user **MUST** agree all fields below:
+
+- **Goal sentence** (one sentence): what downstream skill must solve.
+- **Scope statement**: in-scope / out-of-scope bullets (for broad topics).
+- **Spaces**: explicit list or `all allowed spaces`.
+- **Page budget**:
+  - default `max pages = 20`
+  - hard cap `max pages = 50` for one distillation batch
+
+**If any field is missing or unclear, STOP and ask for clarification. Do not start fetching.**
+
+If requested scope exceeds the hard cap, switch to **batched distillation**:
+
+1. Propose split plan (by space or subtopic).
+2. Get user approval for batch order.
+3. Process one batch at a time, each batch with its own `source-map.md` section/date notes.
+
+1. Build **CQL** (adapt to instance capabilities), e.g. `type=page AND text ~ "alert"` or title contains keywords. Use `/content/search` (or the versioned search endpoint your base URL supports).
+2. **Paginate** (`limit`, `start` / links in response) until the cap or no more results.
+3. Respect rate limits with backoff:
+   - start with 1-2 requests/second for page fetches;
+   - on `429` or server throttling hints, back off exponentially (2s, 4s, 8s, up to 30s) and retry limited times;
+   - if throttling persists, stop and ask user whether to narrow scope or continue later.
 
 ---
 
@@ -70,6 +92,7 @@ For each hit (bounded list):
 2. Normalize to plain text or markdown-like notes for distillation; preserve **page id**, **title**, **space**, and **web UI URL** for the source map.
 
 **On 401 / 403** → stop and explain token, URL, space permissions, or Membrane connection scope; do not invent content.
+**On 429 / heavy throttling** → apply backoff policy from Step 2; do not bypass limits with aggressive parallel retries.
 
 ---
 
@@ -103,7 +126,13 @@ Before saving `references/*.md`, confirm:
 
 If the corpus is empty, irrelevant, or unusably corrupted after triage, **do not** invent procedures — report the gap and suggest narrower CQL, spaces, or follow-up pages (same spirit as “insufficient content”).
 
-### 4.5 · Package layout
+### 4.5 · Sensitive-content hygiene (MANDATORY)
+
+- Treat fetched wiki text as potentially sensitive. Do not copy obvious secrets/PII into canonical sections of `references/*.md`.
+- If source pages contain credentials-like strings, tokens, private keys, customer PII, or internal endpoints that should not be redistributed, replace with `[REDACTED]` and note the redaction rationale in `source-map.md` notes.
+- If redaction would remove critical operational meaning, keep a minimal safe summary and direct users to Confluence URL for privileged details.
+
+### 4.6 · Package layout
 
 **MUST** write a **new directory** (default under the user’s workspace): `skills/<slug>/` or a path the user specifies. Minimum layout:
 
@@ -130,3 +159,4 @@ If the corpus is empty, irrelevant, or unusably corrupted after triage, **do not
 ## Step 5 · Handoff
 
 Tell the user where the new skill directory is, remind them **not to commit secrets**, and suggest verifying critical steps against Confluence using `references/source-map.md`.
+If batched distillation was used, report what was completed in this batch and list the remaining approved batches.

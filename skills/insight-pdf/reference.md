@@ -1,5 +1,7 @@
 # Insight PDF Reference
 
+默认模板从 CDN 加载字体与图表库；离线/内网请改为本地资源后再走 `convert.js`（见 `USAGE.md`）。
+
 ## 设计 Token 表（2.4）
 
 | Token | 值 | 用途 |

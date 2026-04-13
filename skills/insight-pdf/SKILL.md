@@ -17,6 +17,12 @@ description: Generates professional corporate/business report PDFs from text or 
 
 **用户项目最终只得到 PDF 文件，无其他生成物。**
 
+## 网络与模板依赖
+
+默认 `templates/insight-report.html` 通过 **CDN** 加载 Chart.js、ECharts、Google Fonts。**转换阶段需能访问外网**（或你已把模板改为本地/内网镜像脚本与字体）。纯离线环境若未改模板，可能出现图表空白、超时或版式回退。
+
+**安全提示**：HTML 由 Agent/用户内容拼装；勿对**不可信来源**的原始 HTML 直接转换（等同在本地 Chromium 中执行页面脚本）。常规「自己撰写的报告 Markdown→HTML」场景风险可接受。
+
 ## 可视化能力
 
 | 类型 | 支持 |
@@ -56,8 +62,9 @@ description: Generates professional corporate/business report PDFs from text or 
 ```bash
 cd skills/insight-pdf   # 或 ~/.cursor/skills/insight-pdf
 npm install
-npx playwright install chromium
 ```
+
+`package.json` 含 `postinstall`：会在安装后尝试拉取 Playwright Chromium。若未成功，再执行：`npx playwright install chromium`。详见 `USAGE.md`。
 
 ## Agent 执行示例
 
@@ -75,8 +82,4 @@ npx playwright install chromium
 
 ## 依赖缺失时
 
-若转换失败且错误提示 Chromium 未安装，引导用户到 **skill 目录**（非项目目录）执行：
-
-```bash
-cd skills/insight-pdf && npm install && npx playwright install chromium
-```
+若转换失败且错误提示 Chromium 未安装，引导用户到 **skill 目录**（非项目目录）执行 `npm install`，必要时 `npx playwright install chromium`。详见 `USAGE.md`。

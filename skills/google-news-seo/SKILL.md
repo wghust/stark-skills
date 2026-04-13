@@ -8,6 +8,14 @@ description: Google News Diagnostic Engine — audit and optimize news articles 
 > **Language / 语言**：Detect the user's language and respond in the same language throughout.
 > 用户用中文提问则全程用中文回复；用英文提问则全程用英文回复。
 
+**Disclaimer / 声明**：本 skill 为**启发式审计框架**，非 Google 官方结论；评分与清单不能替代 Search Console、Publisher Center 或法律顾问对内容政策的判断。
+
+---
+
+### HTTP fetch · 抓取工具约定
+
+凡需拉取线上页面 HTML 的步骤，本文件统一写为 **`web_fetch`**。在运行时请映射到你环境中**实际可用**的等价能力（例如 Cursor 内置网页抓取、MCP `fetch` 等），**使用工具面板中的确切名称**，避免因大小写或别名不一致导致未调用。
+
 ---
 
 ## Google News System Model
@@ -54,6 +62,10 @@ Auditing [URL / article / site] — scope: [scope summary]. Starting checks...
 
 > **Run this check first when performing a Full Diagnostic or when the user asks why their site is not appearing in Google News.**
 
+### Methodology limits / 方法局限
+
+通过 **WebSearch** 构造的 `site:<domain>` 类查询 **不等于** Google 内部「Google News 收录」状态：结果受索引区域、个性化、抓取快照时间与搜索界面模块影响。本节结论必须标注为 **启发式（approximate）**，并建议用户用 **Google Search Console**、**Publisher Center**、在搜索工具中选择「新闻」或站点专属报告、以及 Rich Results Test 等**交叉验证**。
+
 ### Step 1 — Simulate Google News index query
 
 Use WebSearch to simulate a `site:<domain>` query in a Google News context. Construct the search as:
@@ -86,10 +98,11 @@ Also record:
 ### Output format
 
 ```
-News Index Status: [Not Indexed ❌ / Limited Presence ⚠️ / Strong Presence ✅]
+News Index Status: [Not Indexed ❌ / Limited Presence ⚠️ / Strong Presence ✅] (heuristic — not official Google News index)
 Detected article count: [N]
 Latest indexed article: [timestamp or "not detected"]
 Diagnostic focus: [Layer 1 / Both Layers / Layer 2]
+Suggested verification: [e.g. GSC coverage, Publisher Center, News tab site: search]
 ```
 
 ---
@@ -122,6 +135,8 @@ Use `web_fetch` to retrieve the page. If the response contains one or more `<scr
 **Phase 2 — curl fallback（web_fetch 无结果时）**
 
 > **Note**: Attempting curl fallback — SSR/SSG sites pre-render JSON-LD into static HTML; curl can retrieve it directly without JS execution.
+
+> **`sed -i` portability / 跨平台**：下文对临时 Python 脚本的占位符替换——**macOS (BSD sed)** 使用 `sed -i '' "s|…|…|g" file`；**Linux (GNU sed)** 使用 `sed -i "s|…|…|g" file`（无中间 `''`）。任选与当前 OS 匹配的写法。
 
 If Shell tool is unavailable, skip directly to Phase 3.
 
@@ -206,7 +221,7 @@ Verify manually: 🔗 https://search.google.com/test/rich-results?url=<URL>
 
 ### Step 1 — Verify trust pages
 
-Use WebFetch to check each URL. A page passes if it returns HTTP 200 with non-trivial content (not a redirect to homepage).
+Use `web_fetch` to check each URL. A page passes if it returns HTTP 200 with non-trivial content (not a redirect to homepage).
 
 | Page | URL pattern | Points |
 |------|-------------|--------|
@@ -272,7 +287,7 @@ Check both:
 
 ### Step 2 — Fetch author profile page
 
-Use WebFetch on the URL from `author.url` (Schema) or the byline hyperlink.
+Use `web_fetch` on the URL from `author.url` (Schema) or the byline hyperlink.
 
 A complete author profile requires:
 - Author name visible
@@ -287,11 +302,12 @@ A complete author profile requires:
 
 ### Step 3 — Detect suspicious AI author names
 
-Scan `author.name` (Schema) and page byline for:
-> `AI Agent` · `Bot` · `System Writer` · `Auto Writer` · `AI Writer` · `GPT` · `Claude` · `Gemini`
+Scan `author.name` (Schema) and page byline for **obvious AI-as-author labels** (e.g. role phrases), not arbitrary substrings inside human names:
+> `AI Agent` · `ChatGPT` · `GPT-4` · `OpenAI` (as sole byline) · `System Writer` · `Auto Writer` · `AI Writer` · `Gemini` (as product credited as author) · `Claude` **only when** clearly denoting the model as author (e.g. "Written by Claude"), **not** when part of a plausible human name (e.g. "Jean-Claude", "Claude Smith").
 
-- Match detected → flag as **P0**: "Suspicious AI author name detected — replace with human editor name" *(mark as needs human confirmation)*
-- No match → **10 pts**
+- **Clear AI-as-author attribution** → flag **P0** 候选，且必须标注 **需人工确认**；不得仅凭姓氏或常见人名片段判负。
+- **Ambiguous / substring-only match** → **🔍 Manual**，不扣满分项。
+- No concerning pattern → **10 pts**
 
 ### Step 4 — Detect social / credential signals
 
@@ -491,6 +507,8 @@ echo "File size: $(wc -c < "$TMPFILE") bytes"
 ```
 
 ### Step 2 — Detect article body in initial HTML
+
+> **`sed -i`**: macOS 用 `sed -i '' "s|…|…|g"`；Linux (GNU) 用 `sed -i "s|…|…|g"`（与 §1 Schema Phase 2 相同）。
 
 ```bash
 cat > /tmp/check_body.py << 'PYEOF'
@@ -883,7 +901,7 @@ Competitors detected:
 
 ### Step 2 — Fetch competitor articles
 
-For each competitor URL, use the three-phase fetch protocol (WebFetch → curl → Manual) to extract:
+For each competitor URL, use the three-phase fetch protocol (`web_fetch` → curl → Manual) to extract:
 - `datePublished` from Schema or page
 - NewsArticle Schema completeness: count present required fields out of 9 (`@type`, `headline`, `image`, `datePublished`, `dateModified`, `author`, `publisher`, `publisher.logo`, `mainEntityOfPage`)
 - Author authority: named author with linked profile page (Yes / Partial / No)
@@ -952,7 +970,7 @@ Read: eeat-reference.md
 
 | Input | Action |
 |-------|--------|
-| Live URL / 线上 URL | Use WebFetch to fetch the page; extract full page HTML, JSON-LD, and visible text |
+| Live URL / 线上 URL | Use `web_fetch` to fetch the page; extract full page HTML, JSON-LD, and visible text |
 | Raw HTML / 原始 HTML | Parse provided HTML directly; no fetch needed |
 | URL unreachable / 无法抓取 | Mark all signals that require live page inspection as 🔍 Manual; proceed with available information |
 
@@ -1076,26 +1094,44 @@ Use the **same language as the user's prompt** throughout (Chinese prompt → Ch
 
 ### Score Aggregation / 评分聚合
 
-**Google News SEO Score = Layer 1 Score × 60% + Layer 2 Score × 40%**
+Each **Layer 1** and **Layer 2** sub-metric below is scored **0–100** first (use the checklists in earlier sections; binary checks map to 100 / 50 / 0 as each subsection defines).
 
-**Layer 1 — Index Eligibility (60% weight)**
+**Layer 1 Score (0–100)** — weights **within Layer 1 sum to 100%**:
 
-| Sub-check | Weight |
-|-----------|--------|
-| Publisher Trust Score | 15% |
-| Author Authority Score | 15% |
-| Schema Health (completeness %) | 15% |
-| News Sitemap Health Score | 10% |
-| Crawlability Score | 5% |
+```
+Layer1 = 0.25×PublisherTrust + 0.25×AuthorAuthority + 0.25×SchemaHealth
+       + 0.17×NewsSitemapHealth + 0.08×Crawlability
+```
 
-**Layer 2 — Ranking Potential (40% weight)**
+| Sub-check | Weight (of Layer 1) |
+|-----------|---------------------|
+| Publisher Trust Score | 25% |
+| Author Authority Score | 25% |
+| Schema Health (completeness % as 0–100) | 25% |
+| News Sitemap Health Score | 17% |
+| Crawlability Score | 8% |
 
-| Sub-check | Weight |
-|-----------|--------|
-| Freshness Score | 15% |
-| Content Type Score | 10% |
-| Topic Cluster Compatibility Score | 10% |
-| Top Stories Presence (binary: 5 or 0 pts) | 5% |
+**Layer 2 Score (0–100)** — weights **within Layer 2 sum to 100%** (renormalized from 15∶10∶10∶5):
+
+```
+Layer2 = 0.375×Freshness + 0.25×ContentType + 0.25×TopicClusterCompat
+       + 0.125×TopStoriesSignal
+```
+
+| Sub-check | Weight (of Layer 2) |
+|-----------|---------------------|
+| Freshness Score | 37.5% |
+| Content Type Score | 25% |
+| Topic Cluster Compatibility Score | 25% |
+| Top Stories Presence (map Confirmed→100, Gap→0, Not triggering→50 unless your rubric says otherwise) | 12.5% |
+
+**Final Google News SEO Score (0–100)**:
+
+```
+Google News SEO Score = 0.6 × Layer1 + 0.4 × Layer2
+```
+
+（即：Layer 1 占最终总分的 60% 权重，Layer 2 占 40%；上表百分比是 **层内** 合成 Layer1/Layer2 时用，勿与 60/40 混淆。）
 
 **Rating labels:**
 

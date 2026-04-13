@@ -1,13 +1,13 @@
 # openspec-design User Guide
 
-Extends OpenSpec's proposal stage with design asset integration: when a proposal includes a Figma link, automatically calls Figma MCP to fetch design data, save to `design/`, and generate a design summary document.
+Extends OpenSpec's proposal stage with design asset integration: when a proposal includes a Figma link or images, the agent calls the **Figma MCP you have configured**, saves assets under `openspec/changes/<change-id>/design/`, and writes `design/design-map.md`.
 
 ---
 
 ## Prerequisites
 
 1. **Project has OpenSpec initialized**: Root directory has `openspec/` with `AGENTS.md`, `project.md`, etc.
-2. **Cursor has Figma MCP configured**: Enable Figma MCP Server in Cursor settings
+2. **Figma MCP enabled** in Cursor (or your client): Framelink and other servers expose **different tool names**—the agent should read the live tool list.
 
 ---
 
@@ -33,15 +33,15 @@ In a **project with OpenSpec initialized**, tell the AI:
 - "Enhance openspec design"
 - "Apply openspec-design"
 
-The AI will read and update the project's `openspec/AGENTS.md`, inserting the design extension section and workflow steps. After that, the project's proposal flow supports Figma design asset integration.
+The AI will read and update the project's `openspec/AGENTS.md`, inserting the Design Extension section and a Stage 1 workflow step. After `openspec update` or upstream template changes, you may need to re-run or merge manually.
 
-**Note**: Execute once per project. If `AGENTS.md` already has the design extension, you may skip or overwrite.
+**Note**: Execute once per project (or after major AGENTS refreshes). If `AGENTS.md` already contains Design Extension, the skill may overwrite that block to the latest version.
 
 ---
 
 ### Step 2: Use Figma in Proposals
 
-When using OpenSpec's proposal command (e.g. `/openspec/proposal`), **include the Figma link directly** in your input:
+When creating a proposal, **paste the Figma link** (and optionally attach images):
 
 ```
 /openspec/proposal Add user center page, design at https://www.figma.com/design/pxhnkHfGrSwHbxT1pfV0T4/xxx?node-id=2496-1199
@@ -49,18 +49,17 @@ When using OpenSpec's proposal command (e.g. `/openspec/proposal`), **include th
 
 The AI will:
 
-1. **Detect Figma link**: Recognize `figma.com/file/`, `figma.com/design/` URLs
-2. **Call Figma MCP**: Use `parse_figma_url`, `get_file`, `get_node`, `export_images` to fetch design data
-3. **Create design/ directory**: Save exported images under `openspec/changes/<change-id>/design/`
-4. **Generate design-map.md**: Asset list and design summary
+1. **Detect** `figma.com/file/` / `figma.com/design/` URLs (and attachments/local paths).
+2. **Call Figma MCP** using the tools that actually exist (e.g. Framelink: `get_figma_data`, `download_figma_images`; other servers may use different names).
+3. **Create** `openspec/changes/<change-id>/design/` and place exports/copies there.
+4. **Write** `design/design-map.md`.
 
-**Supported Figma formats**:
+**Supported Figma URL shapes**:
 
-- Full link: `https://www.figma.com/design/xxx?node-id=2496-1199`
-- File link: `https://www.figma.com/file/xxx`
-- Text mention: e.g. "Figma design", "reference Figma link"
+- Full link: `https://www.figma.com/design/<fileKey>/...?node-id=...`
+- File link: `https://www.figma.com/file/<fileKey>/...`
 
-**Image attachments**: If the proposal includes image attachments or local image paths, they will also be saved to `design/` as context assets.
+**Image attachments**: Saved into `design/` as context assets.
 
 ---
 
@@ -87,10 +86,13 @@ openspec/changes/add-user-center/
 ## FAQ
 
 **Q: Figma MCP not being called?**  
-A: Confirm Step 1 was run and `openspec/AGENTS.md` includes the Design Extension section. If it still doesn't run, check that Figma MCP is enabled in Cursor.
+A: Confirm Step 1 was run and `openspec/AGENTS.md` includes the Design Extension section. Ensure Figma MCP is enabled for this workspace.
+
+**Q: Errors like “tool not found” or wrong argument errors?**  
+A: Your Figma server may use different tool names than another vendor’s docs. The agent should use the **configured** MCP’s tool list. See `references/figma-mcp-variants.md` in the skill folder for common patterns.
 
 **Q: Figma MCP call failed?**  
-A: Check that the Figma link is valid, you have access, and Figma MCP API key/auth is configured correctly.
+A: Check link validity, file access, and API token/auth for that MCP.
 
 **Q: Does proposal work without Figma?**  
-A: Yes. Without Figma links or images, the normal proposal flow runs and `design/` is not created.
+A: Yes. Without Figma links or images, the normal proposal flow runs and `design/` is usually omitted.
