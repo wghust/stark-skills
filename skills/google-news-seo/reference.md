@@ -53,7 +53,7 @@ Google News groups articles about the same event into **topic clusters**. Cluste
 3. **Author information / 作者信息** — real author page per article: name, bio, contact, social links
 4. **Keyword research / 关键词** — use Google Trends News Search; match article planning to search demand
 5. **Headlines / 标题** — `<title>` = `<h1>` = Schema `headline`; include primary named entity
-6. **Structured data / 结构化数据** — NewsArticle Schema + BreadcrumbList + Organization Schema
+6. **Structured data / 结构化数据** — 推荐使用 NewsArticle + BreadcrumbList + Organization Schema 以增强理解与展示（Google News / Top Stories 并非以此作为唯一硬性准入）
 7. **News Sitemap** — cover articles published within 48 hours; include `<news:publication_date>` and `<news:title>`
 
 ---

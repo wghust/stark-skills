@@ -18,6 +18,16 @@ description: Google News Diagnostic Engine — audit and optimize news articles 
 
 ---
 
+### Priority rubric · 优先级分级（对齐业界）
+
+- **P0（Blocking / Compliance）**：直接影响抓取/收录，或涉及误导性标注与内容政策风险。例：`robots` 阻断、文章不可访问、`datePublished` 明显错误、作者署名存在明显欺骗。
+- **P1（High impact）**：显著影响 Google News 可见性、稳定收录或排名竞争力，但通常不构成单点阻断。例：News sitemap 信号弱、Schema 关键字段缺失、作者页不完整。
+- **P2（Best practice / Optimization）**：优化点击率、可读性或质量信号，属于增益项。例：标题长度区间、关键词前置、heading 层级微调。
+
+**Industry note / 行业口径**：依据 Google Search Central 与 Publisher Center 文档，`Article/NewsArticle` 结构化数据是**推荐增强**，并非 Top Stories/Google News 的绝对硬性门槛。只有当 Schema 与页面事实明显冲突或构成误导时，才可升级为 P0/P0-candidate。
+
+---
+
 ## Google News System Model
 
 Google News operates on a **two-layer architecture**. This skill evaluates both layers independently.
@@ -334,7 +344,9 @@ Author Authority Score: [0-100]
 
 ## 2 · NewsArticle Schema Checklist Schema 审查清单
 
-### Critical — affects indexing / 必检项（影响收录）
+### Core checks — high impact / 核心检查（高影响，默认 P1）
+
+> **Calibration note / 评级口径**：以下项默认按 **P1** 处理（影响可见性与富结果质量）；若出现**误导性标注**（例如作者/发布时间与页面事实冲突），再升级为 **P0 候选**并要求人工确认。
 
 ```
 - [ ] @context = "https://schema.org"  (not http://)
@@ -460,8 +472,8 @@ Score = (accessible ? 30 : 0) + (news namespace valid ? 40 : 0) + (article withi
 | Check | Pass Condition | Priority |
 |-------|---------------|----------|
 | Title tag present | `<title>` element exists and is non-empty | P0 |
-| Length 50–70 characters | Title length between 50 and 70 characters | P1 |
-| Primary keyword near start | Key topic/entity within the first 60 characters | P1 |
+| Length 50–70 characters | Title length between 50 and 70 characters | P2 |
+| Primary keyword near start | Key topic/entity within the first 60 characters | P2 |
 | Unique (not duplicated) | Title is not identical to other pages (🔍 Manual) | P1 |
 | No keyword stuffing | Same keyword not repeated > 2 times | P2 |
 
@@ -469,7 +481,7 @@ Score = (accessible ? 30 : 0) + (news namespace valid ? 40 : 0) + (article withi
 
 | Check | Pass Condition | Priority |
 |-------|---------------|----------|
-| Meta description present | `<meta name="description">` exists and non-empty | P1 |
+| Meta description present | `<meta name="description">` exists and non-empty | P2 |
 | Length 120–160 characters | Description length between 120 and 160 characters | P2 |
 | Contains primary keyword | Primary topic/entity appears in description | P2 |
 
@@ -484,8 +496,8 @@ Score = (accessible ? 30 : 0) + (news namespace valid ? 40 : 0) + (article withi
 
 | Check | Pass Condition | Priority |
 |-------|---------------|----------|
-| Exactly one H1 | Page contains exactly one `<h1>` element | P1 |
-| H1 matches headline | H1 text consistent with article headline | P1 |
+| Exactly one H1 | Page contains exactly one `<h1>` element | P2 |
+| H1 matches headline | H1 text consistent with article headline | P2 |
 | Logical hierarchy | No heading levels skipped (e.g., no H1 → H3 without H2) | P2 |
 | H1 contains primary keyword | Primary topic/entity appears in H1 | P2 |
 
@@ -1123,7 +1135,7 @@ Layer2 = 0.375×Freshness + 0.25×ContentType + 0.25×TopicClusterCompat
 | Freshness Score | 37.5% |
 | Content Type Score | 25% |
 | Topic Cluster Compatibility Score | 25% |
-| Top Stories Presence (map Confirmed→100, Gap→0, Not triggering→50 unless your rubric says otherwise) | 12.5% |
+| Top Stories Presence (fixed mapping: Confirmed→100, Gap→0, Not triggering→50) | 12.5% |
 
 **Final Google News SEO Score (0–100)**:
 
