@@ -25,6 +25,12 @@ This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, e
 
 `stark-skills` is a skills workspace for AI coding agents. It contains Cursor Skills—packaged instructions that extend agent capabilities. This repo has no traditional app code; it is a meta/skills repo built on Markdown and the Cursor Skills format.
 
+## Skill Versioning
+
+- Formal skills should include a `version` field in `SKILL.md` frontmatter alongside `name` and `description`.
+- When modifying an existing published or maintained skill, bump that skill's `version`.
+- Skill-specific version bump rules may be defined in local references; for example, the opc suite uses `skills/opc/references/versioning.md`.
+
 ## Skills in this repo
 
 This workspace ships multiple Cursor Skills under `skills/`. Two primary examples:

@@ -86,6 +86,43 @@
 将以上合并为 `trust_modifier`，并约束在 `-10 ~ +10`。
 注意：高安装量不能覆盖关键安全问题。
 
+## 5.2) trust overlay 采集步骤（新增）
+
+不要直接“凭印象”给平台修正项，建议按固定顺序采集：
+
+1. 记录目标身份
+   - skill URL
+   - publisher
+   - 评测日期
+   - 如能识别，记录版本或页面快照时间
+2. 记录安装信号
+   - 周安装量或平台提供的安装量字段
+   - 缺失时写 `not available`
+3. 记录来源信誉
+   - 官方组织 / 高信誉作者 / 普通来源 / 来源不明
+4. 记录仓库信号
+   - stars
+   - 最近维护痕迹
+   - 仓库是否可识别
+5. 记录安全审计
+   - Pass / Warn / unknown
+   - 如果有 Warn，单独写风险说明
+6. 记录 spec conformance
+   - frontmatter
+   - 自包含目录
+   - 使用边界
+   - supporting references
+
+建议口径：
+
+- 缺一个信号可以继续，但必须标注缺失
+- 缺两个以上主信号，要在报告里加 `trust completeness risk`
+- 不能因为“印象里很知名”就直接加分
+
+详细规则参考：
+
+- `references/trust-overlay-collection-guide.md`
+
 ## 6) 回归评测建议
 
 建议每次迭代复用同一批核心用例，至少包含：
@@ -97,11 +134,56 @@
 
 这样可以形成可比较的版本趋势，而不是一次性主观打分。
 
+## 6.1) 标准测试用例库（新增）
+
+现在建议优先从标准测试用例库选 case，再补目标 skill 的特定 case。
+
+默认引用：
+
+- `references/test-case-catalog.md`
+- `references/test-cases-general-v1.md`
+- `references/test-cases-tooling-v1.md`
+
+默认 scope 对应用例集：
+
+- `smoke`
+  - `GEN-001` Core Happy Path
+  - `GEN-002` Mandatory Input Gate
+- `regression`
+  - `GEN-001`
+  - `GEN-002`
+  - `GEN-003` Paraphrase / Perturbation
+  - `GEN-004` Failure-Path Recovery
+- `deep`
+  - `GEN-001`
+  - `GEN-002`
+  - `GEN-003`
+  - `GEN-004`
+  - `GEN-005` Repeatability Stability
+  - `GEN-006` Maintainability / Readability Review
+
+若目标 skill 依赖工具、环境状态或外部系统，再追加：
+
+- `TOOL-001` Tool Selection Correctness
+- `TOOL-002` Dependency / Environment Handling
+- `TOOL-003` Permission or Fault Handling
+- `TOOL-004` Output Traceability
+
+建议口径：
+
+1. 先锁定标准 case 集
+2. 再补目标 skill 特定 case
+3. 报告里尽量引用 case ID，便于回归比较
+
 ## 7) 报告模板
 
 可直接使用 `references/report-template.md`。
 
 若要看基线评测参考，可看 `references/baseline-find-skills-v1.md`。
+新版基线参考：
+
+- `references/baseline-skill-evaluation-v2.md`
+- `references/baseline-find-skills-v2.md`
 
 ## 8) 让评测更“准”的校准建议（新增）
 
@@ -120,3 +202,5 @@
 - `references/ecosystem-analysis-anthropics-skills.md`
 - `references/evaluation-calibration-guide.md`
 - `references/baseline-index.md`
+- `references/test-case-catalog.md`
+- `references/trust-overlay-collection-guide.md`

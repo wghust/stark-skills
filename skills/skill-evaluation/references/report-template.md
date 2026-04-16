@@ -8,6 +8,8 @@
 - Date:
 - Evaluator:
 - Baseline reference (optional):
+- Standard case set:
+- Custom extra cases (optional):
 
 ## 2. Score Matrix
 
@@ -32,6 +34,16 @@
 | Spec conformance |  |  |  |
 | **Trust Modifier (-10 to +10)** |  |  |  |
 | **Final Total (0-100)** | `Core Total + Trust Modifier` |  |  |
+
+### 2.1.1 Trust Evidence Completeness (recommended)
+
+- Page identity recorded:
+- Install signal completeness: `complete | partial | missing`
+- Source reputation completeness: `complete | partial | missing`
+- Repository signal completeness: `complete | partial | missing`
+- Security audit completeness: `complete | partial | missing`
+- Conformance check completeness: `complete | partial | missing`
+- Completeness risk note:
 
 ## 2.2 Conformance Checklist (recommended)
 
@@ -83,6 +95,12 @@
 - Release decision: `PASS | CONDITIONAL PASS | FAIL`
 - Reason:
 
+## 5.1 Dual-Judge Conflict Review (when applicable)
+
+| Conflict ID | Case ID | Conflict Type | Final Arbitration | Score Impact | Uncertainty Note |
+|-------------|---------|---------------|-------------------|--------------|------------------|
+| CJ-001 |  |  |  |  |  |
+
 ## 6. Prioritized Fixes
 
 - P0:
@@ -95,3 +113,10 @@
 |-------------|------------------------|---------------------|
 | E-001 |  |  |
 | E-002 |  |  |
+
+## 7.1 Standard Case Coverage (recommended)
+
+| Case ID | Description | Status | Evidence ID |
+|---------|-------------|--------|-------------|
+| GEN-001 |  |  |  |
+| GEN-002 |  |  |  |

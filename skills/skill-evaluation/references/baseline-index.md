@@ -8,7 +8,8 @@
 
 | Target | Baseline File | Scope | Final Decision | Priority | Last Updated | Next Review |
 |--------|---------------|-------|----------------|----------|--------------|-------------|
-| `find-skills` (skills.sh) | `baseline-find-skills-v1.md` | deep | PASS | P0 | 2026-04-11 | 版本变更后立即复评；否则双周 |
+| `skill-evaluation` | `baseline-skill-evaluation-v3.md` | deep | PASS | P0 | 2026-04-16 | 版本变更后立即复评；否则双周 |
+| `find-skills` (skills.sh) | `baseline-find-skills-v2.md` | deep | PASS | P0 | 2026-04-16 | 版本变更后立即复评；否则双周 |
 | `anthropics/skills` source benchmark | `baseline-anthropics-skills-repo-benchmark-v1.md` | deep | PASS | P1 | 2026-04-11 | 月度刷新或上游重大变更后 |
 
 ## Prioritization Rule
@@ -39,3 +40,16 @@
 - 核心分变化
 - trust modifier 变化
 - 新增/消除 blocker
+
+## Standard Case Reference Rule
+
+建议从本次变更后开始，baseline / regression 报告尽量引用标准 case ID：
+
+- 通用骨架：`GEN-###`
+- 工具型扩展：`TOOL-###`
+
+推荐最少记录：
+
+- scope tier
+- 已执行 case IDs
+- 每个关键 finding 对应的 case ID
