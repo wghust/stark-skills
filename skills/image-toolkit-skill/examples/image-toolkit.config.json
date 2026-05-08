@@ -1,0 +1,20 @@
+{
+  "input": "./public/images",
+  "output": "./public/images-optimized",
+  "operations": [
+    {
+      "type": "resize",
+      "maxWidth": 1920,
+      "withoutEnlargement": true
+    },
+    {
+      "type": "convert",
+      "format": "webp",
+      "quality": 80
+    },
+    {
+      "type": "compress",
+      "quality": 75
+    }
+  ]
+}

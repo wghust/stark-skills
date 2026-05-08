@@ -1,6 +1,6 @@
 # Stark Skills
 
-A collection of skills for AI coding agents. Skills are packaged instructions that extend agent capabilities for design, spec, SEO, and debugging workflows.
+A collection of skills for AI coding agents. Skills are packaged instructions that extend agent capabilities for design, spec, SEO, image processing, and debugging workflows.
 
 Skills follow the [Agent Skills](https://agentskills.io/) format and are compatible with Cursor.
 
@@ -31,6 +31,7 @@ npx skills add https://github.com/wghust/stark-skills/tree/main/skills/interview
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/skill-evaluation
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/network-status
 npx skills add https://github.com/wghust/stark-skills/tree/main/skills/chrome-tab-killer
+npx skills add https://github.com/wghust/stark-skills/tree/main/skills/image-toolkit-skill
 
 # Local path
 npx skills add ./stark-skills
@@ -53,6 +54,7 @@ cp -r stark-skills/skills/interview-evaluation ~/.cursor/skills/
 cp -r stark-skills/skills/skill-evaluation ~/.cursor/skills/
 cp -r stark-skills/skills/network-status ~/.cursor/skills/
 cp -r stark-skills/skills/chrome-tab-killer ~/.cursor/skills/
+cp -r stark-skills/skills/image-toolkit-skill ~/.cursor/skills/
 ```
 
 ### Installation Scope
@@ -384,6 +386,25 @@ project/
 
 ---
 
+### image-toolkit-skill
+
+Local **raster** image toolkit (Node.js + **sharp**): compress, convert (WebP/AVIF/JPEG/PNG), resize, crop, rotate, flip, watermark, metadata, and **batch** pipelines from JSON. Outputs a text/optional JSON report; host-agnostic paths (Codex / Claude Code / Cursor / project-local skill dirs).
+
+**Use when:**
+- Image compression, format conversion, resize/crop/rotate/flip, watermarking
+- 图片压缩、转 WebP/AVIF、裁剪、批量处理、图片元信息 / EXIF
+- Frontend `public/` asset hygiene, LCP/Lighthouse-style image size work (local processing only)
+
+**Features:**
+- CLI: `node bin/image-toolkit.mjs <operation> [options]` — see [skills/image-toolkit-skill/USAGE.md](skills/image-toolkit-skill/USAGE.md) for skill-root resolution, running from any cwd (absolute paths), and `--report` JSON schema
+- Safety defaults: no in-place overwrite of sources; skip unsupported formats (e.g. SVG); optional `--strict` fail-fast
+
+**Prerequisites:** Node.js ≥ 18.17; one-time **`npm install`** in the skill package directory (contains native `sharp` binaries — do not commit `node_modules`).
+
+**References:** [skills/image-toolkit-skill/SKILL.md](skills/image-toolkit-skill/SKILL.md) · [skills/image-toolkit-skill/USAGE.md](skills/image-toolkit-skill/USAGE.md)
+
+---
+
 ## Usage
 
 Skills are loaded on demand. When the user's message matches the skill's trigger phrases, the agent reads `SKILL.md` and applies its instructions.
@@ -459,6 +480,13 @@ Create an enterprise report with charts showing Q4 revenue trends
 生成一份包含数据可视化的专业 PDF 报告
 ```
 
+```
+# image-toolkit-skill
+把 public 下的 PNG 批量转成 WebP
+压缩图片、裁剪成 16:9、读取图片宽高和 EXIF
+Optimize images for LCP / compress ./public/images to ./dist
+```
+
 ## What are Agent Skills?
 
 Agent skills are reusable instruction sets that extend your coding agent's capabilities. They are defined in `SKILL.md` files with YAML frontmatter containing a `name` and `description`. The agent loads a skill when the user's request matches the description.
@@ -475,6 +503,7 @@ Skills let agents perform specialized tasks like:
 - Diagnosing network status (proxy, connectivity, speed, DNS, public IP)
 - Managing Chrome tab overload (CDP + AppleScript, crash/duplicate detection)
 - Generating structured outputs (e.g. design-map.md, SEO audit reports, diagnostic reports, release notes)
+- Processing raster images locally (compress, convert, resize, batch pipelines, metadata) via CLI
 
 ## Supported Agents
 
@@ -518,9 +547,17 @@ stark-skills/
 │   │   └── references/         # Report templates, baseline reports, calibration docs
 │   ├── network-status/
 │   │   └── SKILL.md            # Network diagnosis: proxy, speed, DNS, connectivity
-│   └── chrome-tab-killer/
-│       ├── SKILL.md            # Chrome tab enum + CDP / AppleScript
-│       └── scripts/            # list/close AppleScripts (macOS)
+│   ├── chrome-tab-killer/
+│   │   ├── SKILL.md            # Chrome tab enum + CDP / AppleScript
+│   │   └── scripts/            # list/close AppleScripts (macOS)
+│   └── image-toolkit-skill/
+│       ├── SKILL.md            # Triggers + AI routing for CLI operations
+│       ├── USAGE.md            # Skill root, any-cwd invoke, troubleshooting, --report JSON
+│       ├── bin/image-toolkit.mjs
+│       ├── package.json
+│       ├── src/                # cli, core ops, utils
+│       ├── examples/
+│       └── tests/
 ├── tools/
 │   └── git-intelligence/       # Runnable TypeScript CLI companion tool
 │       ├── src/                # cli.ts, git/, llm/, analysis/, utils/

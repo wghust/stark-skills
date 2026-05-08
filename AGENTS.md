@@ -75,10 +75,10 @@ For full execution details, tool names, and insertion fragments, read `skills/op
 
 Read-only Confluence search and **curated** distillation into a **new multi-file Agent Skill** (`SKILL.md` + `references/` + optional `scripts/`): topic-aligned synthesis, conflict surfacing, macro/noise handling—not raw page dumps. Supports direct REST (base URL + API token) or optional Membrane CLI (`connectionId`). Use when the user wants Confluence 蒸馏, topic search, or generating a skill from wiki/runbook content. See `skills/confluence-distill/SKILL.md` and `USAGE.md`.
 
-### code-branch-management (`skills/code-branch-management/`)
-
-Distilled **Git/GitLab branch management** notes from Hexin Confluence (`cf.myhexin.com`), including mobile main station flow, multi-space specs, GitLab version/branch (qsrv), and cautions. Read `references/source-map.md` + `overview.md` before advising. See `skills/code-branch-management/SKILL.md` and `USAGE.md`.
-
 ### create-favicon (`skills/create-favicon/`)
 
 Build **`favicon.ico`** from a **user-supplied** image: ICO container with embedded **PNG** at **32×32**, **48×48**, and **180×180**. Default CLI framing is **`contain`** (full image visible; transparent or white padding)—use **`--fit cover`** only if the user explicitly wants fill/crop. Three embedded sizes share the same composition; resampling uses **Lanczos (lanczos3)**. **Without** an attached image or explicit source path, the agent must **stop** and ask the user to upload/specify one. **Do not** run CLI `pnpm install` / build in an unrelated user app repo by default—use this monorepo’s `tools/create-favicon`, a **temp** checkout, or non-Node fallbacks; only write **`favicon.ico`** into the user’s app. Companion CLI: `tools/create-favicon/`. See `skills/create-favicon/SKILL.md` and `USAGE.md`.
+
+### image-toolkit-skill (`skills/image-toolkit-skill/`)
+
+**Raster image toolkit** for local `public/` assets and pipelines: **compress, convert (WebP/AVIF/JPEG/PNG), resize, crop, rotate, flip, watermark, metadata, batch** via `node bin/image-toolkit.mjs` (Node + **sharp**). The package is **host-agnostic** (path to the skill directory is not prescribed—see **`USAGE.md`** for skill root + running from any cwd). In this monorepo it lives under `skills/image-toolkit-skill/`. Default **does not overwrite inputs**; writes under `./image-toolkit-output` unless `--output` is set; **metadata** does not default an output path (read-only scan). See **`SKILL.md`**, **`USAGE.md`**, and `examples/README.md`.
