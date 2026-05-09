@@ -1,6 +1,6 @@
 {
   "name": "image-toolkit-skill",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Local raster image toolkit CLI (compress, convert, resize, crop, rotate, flip, watermark, metadata, batch) powered by sharp",
   "type": "module",
   "bin": {

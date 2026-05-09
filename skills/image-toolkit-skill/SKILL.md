@@ -1,6 +1,6 @@
 ---
 name: image-toolkit-skill
-version: "0.1.3"
+version: "0.1.4"
 description: |
   Local raster image toolkit for frontend/public assets, content ops, SEO/Lighthouse/LCP workflows, static asset hygiene, and automated pipelines. Use when users mention image toolkit, image processing, compress/optimize images, convert to WebP/AVIF, resize/crop/rotate/flip, watermark, batch images, image metadata/EXIF, LCP image optimization, frontend image assets, or static image governance.
   中文触发：图片处理、图片压缩、压缩图片、图片格式转换、图片转 WebP/AVIF、图片裁剪、图片缩放、图片旋转、图片翻转、图片加水印、图片批量处理、图片元信息、图片太大、优化图片体积、LCP 图片优化、前端图片资源优化、静态资源图片治理。
@@ -9,7 +9,7 @@ description: |
 
 # image-toolkit-skill
 
-> **Language**: Match the user’s language when replying.
+> **Language**: Match the user's language when replying.
 
 ## Normative references（read order）
 
