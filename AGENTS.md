@@ -82,3 +82,7 @@ Build **`favicon.ico`** from a **user-supplied** image: ICO container with embed
 ### image-toolkit-skill (`skills/image-toolkit-skill/`)
 
 **Raster image toolkit** for local `public/` assets and pipelines: **compress, convert (WebP/AVIF/JPEG/PNG), resize, crop, rotate, flip, watermark, metadata, batch** via `node bin/image-toolkit.mjs` (Node + **sharp**). The package is **host-agnostic** (path to the skill directory is not prescribed—see **`USAGE.md`** for skill root + running from any cwd). In this monorepo it lives under `skills/image-toolkit-skill/`. Default **does not overwrite inputs**; writes under `./image-toolkit-output` unless `--output` is set; **metadata** does not default an output path (read-only scan). See **`SKILL.md`**, **`USAGE.md`**, and `examples/README.md`.
+
+### skills-overall-analysis (`skills/skills-overall-analysis/`)
+
+**Read-only inventory** of locally installed Agent Skills (workspace + user homes, Cursor/Claude/Codex/Agents-style roots): lists every discovered `SKILL.md` with inferred `source_scope` / `provider`, then reports **P0 / P1 / P2** overlap signals (same `name` across scopes, redundant realpaths, heuristic description collisions). Does **not** edit skill files; for automated dedupe / apply / rollback use **skill-governor**. See **`SKILL.md`**, **`USAGE.md`**, and `references/platform-paths.md`.

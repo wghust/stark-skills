@@ -1,0 +1,3 @@
+display_name: Skill Power Profile
+short_description: Measure local skill arsenal power.
+default_prompt: Analyze my local skills and generate a shareable skill power card.
