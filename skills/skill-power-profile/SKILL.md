@@ -1,14 +1,14 @@
 ---
 name: skill-power-profile
-version: 0.4.0
+version: 0.6.1
 description: |
-  Profile a user's local Agent/Codex/Cursor/Claude skills as a dramatic "skill power" arsenal: scan local SKILL.md files, classify capability domains, compute coverage/depth/balance scores, assign playful mastery titles such as 剪辑大师, 全栈炼金术士, 文档贤者, or 万能勇者, and optionally turn the summarized result into a shareable image by giving a concise visual brief to an image generation model. Use when the user asks to measure local skills strength, assess "无所不能程度", generate a skill persona/title, inspect local skill concentration, create a shareable poster/card/image from the result, or produce a fun but evidence-based skills power report.
-  测评用户本地 skills 的强大程度与能力分布，生成中二风格但有证据的技能树画像、战力评分、职业称号、补强建议；当用户要战力卡/分享图/海报时，先生成总结 brief，再交给图像模型生成传播图片。触发词：本地 skill 战力、skills 强大程度、无所不能程度、技能树画像、给我起一个 skill 称号、生成战力卡、分享图、海报、传播图片、剪辑大师/写作法师/自动化贤者等能力称号。
+  Profile a user's local Agent/Codex/Cursor/Claude skills as a dramatic "skill power" arsenal in Chinese or English: scan local SKILL.md files, classify capability domains, compute coverage/depth/balance scores, assign playful mastery titles such as 剪辑大师 / Timeline Master, 全栈炼金术士 / Full-Stack Alchemist, 文档贤者 / Document Sage, or 万能勇者 / Omni Hero, and optionally turn the summarized result into a shareable image by giving a concise visual brief to an image generation model. Use when the user asks to measure local skills strength, assess "无所不能程度", generate a skill persona/title, inspect local skill concentration, create a Chinese/English skill power report, create a shareable poster/card/image from the result, or produce a fun but evidence-based skills power report.
+  测评用户本地 skills 的强大程度与能力分布，支持中文或英文生成中二风格但有证据的技能树画像、战力评分、职业称号、补强建议；当用户要战力卡/分享图/海报时，先生成对应语言的总结 brief，再交给图像模型生成传播图片。触发词：本地 skill 战力、skills 强大程度、无所不能程度、技能树画像、中文版本、英文版本、English version、给我起一个 skill 称号、生成战力卡、分享图、海报、传播图片、剪辑大师/写作法师/自动化贤者等能力称号。
 ---
 
 # skill-power-profile
 
-> Language: Match the user's language. Chinese requests should receive a Chinese report.
+> Language: Match the user's language. Chinese requests should receive a Chinese report; English requests should receive an English report. Use `--language zh` or `--language en` when running the script directly.
 
 ## Role
 
@@ -27,11 +27,13 @@ Accept user overrides:
 
 - Specific root path(s) to scan.
 - Provider filter, for example Codex only or Cursor only.
+- Output language: `auto`, `zh`, or `en`. Default `auto` keeps CLI output Chinese for backward compatibility; use `en` for English reports and image briefs.
 - Tone level: `normal`, `dramatic`, or `full-chuunibyou`. Default to `dramatic`.
 - Output depth: `brief`, `standard`, or `deep`. Default to `standard`.
+- Count mode: default `none` counts installed copies; use `--dedupe name`, `--dedupe package`, or `--dedupe realpath` when the user wants capability variety instead of installation footprint.
 - Share image request: when the user asks for a poster/card/image, produce an image-generation brief and use the available image generation capability. Do not render the card with local SVG/HTML unless the user explicitly asks for deterministic local output.
 
-If no roots exist or no `SKILL.md` files are found, say so and provide the roots attempted.
+If no roots exist or no `SKILL.md` files are found, say so and provide the roots attempted. Do not generate a title, strength claim, score interpretation, or image brief from empty evidence.
 
 ## Workflow
 
@@ -47,6 +49,12 @@ Recommended command:
 python3 skills/skill-power-profile/scripts/profile_skills.py --workspace "$PWD" --format markdown
 ```
 
+Optional controls:
+
+```bash
+python3 skills/skill-power-profile/scripts/profile_skills.py --workspace "$PWD" --provider codex --language en --tone normal --depth deep --dedupe name
+```
+
 For machine-readable output:
 
 ```bash
@@ -56,10 +64,10 @@ python3 skills/skill-power-profile/scripts/profile_skills.py --workspace "$PWD" 
 For an image-generation brief:
 
 ```bash
-python3 skills/skill-power-profile/scripts/profile_skills.py --workspace "$PWD" --format image-brief
+python3 skills/skill-power-profile/scripts/profile_skills.py --workspace "$PWD" --language en --format image-brief
 ```
 
-Use the returned brief as the image model prompt. The brief should include only the verified title, rank, score, dimensions, top domain distribution, representative skill names, strengths, weaknesses, improvement routes, and conclusion. Do not add fake metrics or extra skills.
+Use the returned brief as the image model prompt. The brief language should match `--language`. It should include only the verified title, rank, score, dimensions, top domain distribution, representative skill names, strengths, weaknesses, improvement routes, and conclusion. Do not add fake metrics or extra skills. The visual subject should match the verified title and top domain instead of using a fixed archetype.
 
 ## Scoring Model
 
@@ -69,6 +77,8 @@ Compute four visible scores, each 0-100:
 - `Depth`: whether top domains have multiple skills and rich descriptions.
 - `Balance`: whether the arsenal is broad or overly concentrated.
 - `Operability`: whether skills appear actionable, with scripts/references/assets or concrete workflows.
+
+Default score counts installed skill copies because this reflects the user's active local arsenal across providers. When comparing unique capability variety, use a dedupe mode and state that score separately.
 
 Then compute:
 
@@ -107,13 +117,15 @@ If a skill fits no known domain, place it in `misc` and mention the ambiguity on
 
 Use this structure unless the user asks otherwise:
 
-1. **封号**: one main dramatic title and a one-line reason.
-2. **战力面板**: omnipotence score plus Coverage/Depth/Balance/Operability.
-3. **技能树分布**: domain counts and top domains.
-4. **证据**: cite representative skill names/paths that justify the title.
-5. **短板与补强**: 2-4 concrete suggestions, phrased as unlockable paths.
+1. **封号 / Title**: one main dramatic title and a one-line reason.
+2. **战力面板 / Power Panel**: omnipotence score plus Coverage/Depth/Balance/Operability.
+3. **技能树分布 / Skill Tree Distribution**: domain counts and top domains.
+4. **证据 / Evidence**: cite representative skill names/paths that justify the title.
+5. **短板与补强 / Weaknesses & Upgrade Paths**: 2-4 concrete suggestions, phrased as unlockable paths.
 
 For `brief`, keep it under 12 lines. For `deep`, add overlap risks, missing domains, and title runner-ups.
+
+Always state the evidence count mode in the report, especially when multiple provider roots can contain the same skill.
 
 ## Share Image Workflow
 
@@ -122,7 +134,7 @@ When generating a propagation-friendly image:
 - First compute the profile from local evidence.
 - Generate `--format image-brief`.
 - Send the brief to the image generation model/tool with no extra unsupported facts.
-- Ask the image model for a vertical 3:4 or 4:5 social card, clear Chinese typography, strong hierarchy, and dramatic RPG/cyber-magic styling.
+- Ask the image model for a vertical 3:4 or 4:5 social card, clear typography in the selected report language, strong hierarchy, and dramatic RPG/cyber-magic styling.
 - Include these required content blocks: title/seal, battle panel, skill tree distribution, strengths, weaknesses, improvement routes, and current conclusion.
 - Include only metadata-level evidence: title, rank, score labels, top domain counts, representative skill names, and generated advice derived from those scores.
 - Avoid long local paths inside the image; keep paths in the text report if needed.
